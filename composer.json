@@ -1,0 +1,34 @@
+{
+  "name": "drbalcony/nova-common",
+  "description": "A Laravel package providing common functionalities such as client authentication, exception handling, logging, and JSON response macros.",
+  "type": "library",
+  "license": "MIT",
+  "minimum-stability": "stable",
+  "require": {
+    "php": "^8.0",
+    "laravel/framework": "^10.0|^11.0",
+    "illuminate/support": "^10.0|^11.0",
+    "illuminate/http": "^10.0|^11.0",
+    "illuminate/pagination": "^10.0|^11.0",
+    "ext-json": "*",
+    "php-amqplib/php-amqplib": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "DrBalcony\\NovaCommon\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "DrBalcony\\NovaCommon\\NovaCommonServiceProvider"
+      ]
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  }
+}
