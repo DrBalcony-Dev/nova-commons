@@ -1,6 +1,6 @@
 <?php
 
-namespace DrBalcony\NovaCommon;
+namespace DrBalcony\NovaCommon\Providers;
 
 use DrBalcony\NovaCommon\Commands\RabbitMQListenerCommand;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
@@ -12,6 +12,9 @@ class NovaCommonServiceProvider extends ServiceProvider
 {
     public function register()
     {
+
+        // Register your service provider for macros
+        $this->app->register(ResponseMacroServiceProvider::class);
 
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
@@ -25,13 +28,13 @@ class NovaCommonServiceProvider extends ServiceProvider
             return new RabbitMQLogger();
         });
 
-        $this->mergeConfigFrom(__DIR__ . '/Config/nova-common.php', 'nova-common');
+        $this->mergeConfigFrom(__DIR__ . '/../Config/nova-common.php', 'nova-common');
     }
 
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/Config/nova-common.php' => config_path('nova-common.php'),
+            __DIR__ . '/../Config/nova-common.php' => config_path('nova-common.php'),
         ]);
 
         // Register console commands

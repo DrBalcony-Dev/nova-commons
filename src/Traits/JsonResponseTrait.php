@@ -5,7 +5,7 @@ namespace DrBalcony\NovaCommon\Traits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-trait JsonResponseMacro
+trait JsonResponseTrait
 {
     public function sendResponse(mixed $result, string $message = '', int $code = 200, array $meta = []): JsonResponse
     {

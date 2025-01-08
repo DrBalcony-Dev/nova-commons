@@ -11,4 +11,7 @@ return [
             'exception' => env('RABBITMQ_QUEUE_EXCEPTION', 'exception'),
         ],
     ],
+    'earth'=>[
+        'base-url'=> env('EARTH_BASE_URL', 'https://nova.drbalcony.dev/earth')
+    ]
 ];
