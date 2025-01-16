@@ -18,7 +18,7 @@ Add the following to your composer.json:
 ```
 1. require the package:
    ```bash
-    composer require drbalcony/nova-common
+    composer require drbalcony/nova-commons
    ```
 
 2. publish the vendor config file:
