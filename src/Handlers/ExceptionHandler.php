@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
 use Throwable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 
 class ExceptionHandler implements ExceptionHandlerInterface
 {
@@ -33,23 +38,19 @@ class ExceptionHandler implements ExceptionHandlerInterface
      */
     public function render($request, Throwable $e)
     {
-        // Default JSON response format
-        $statusCode = $this->getStatusCode($e);
-        $errorMessage = $this->getErrorMessage($e);
-        return response()->json([
-            'success' => false,
-            'message' => $errorMessage,
-        ], $statusCode);
-    }
+        return match (true) {
+            $e instanceof NotFoundHttpException,
+                $e instanceof RouteNotFoundException,
+                $e instanceof ModelNotFoundException  => Response::notFound('Record not found.'),
 
-    /**
-     * Get the HTTP status code for the exception.
-     */
-    protected function getStatusCode(Throwable $e): int
-    {
-        return method_exists($e, 'getStatusCode')
-            ? $e->getStatusCode()
-            : 500; // Default to 500 if no status code exists
+            $e instanceof ValidationException => Response::validationError($e->errors()),
+
+            $e instanceof AuthenticationException => Response::unAuthorized(),
+
+            $e instanceof AuthorizationException => Response::forbidden(),
+
+            default => Response::error(message: $this->getErrorMessage($e)),
+        };
     }
 
     /**
