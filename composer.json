@@ -1,5 +1,5 @@
 {
-  "name": "drbalcony/nova-common",
+  "name": "drbalcony/nova-commons",
   "description": "A Laravel package providing common functionalities such as client authentication, exception handling, logging, and JSON response macros.",
   "type": "library",
   "license": "MIT",
