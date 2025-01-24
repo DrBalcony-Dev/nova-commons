@@ -25,7 +25,7 @@ trait RabbitMQPublisher
     public function pushRawToRabbitMQ(array $data, string $queueName, array $properties = [], string $exchangeName = ''): void
     {
         try {
-            $connection = AMQPStreamConnection::create_connection(Config::get('queue.connections.rabbitmq.hosts'));
+            $connection = AMQPStreamConnection::create_connection([Config::get('nova-common.rabbitmq')]);
             $channel = $connection->channel();
 
             $properties = array_merge([
