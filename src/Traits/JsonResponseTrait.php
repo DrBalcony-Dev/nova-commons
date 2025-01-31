@@ -72,7 +72,7 @@ trait JsonResponseTrait
     public function sendError(
         string $error,
         array $errorMessages = [],
-        int $code = 400
+        int $code = Response::HTTP_BAD_REQUEST
     ): JsonResponse {
         $response = [
             'success' => false,
