@@ -16,5 +16,8 @@ return [
         'auth-cache-driver'=> env('EARTH_CACHE_DRIVER', 'redis'), // database, file ...
         'auth-cache-connection'=> env('EARTH_CACHE_CONNECTION', 'default'),
         'client-token'=> env('EARTH_CACHE_CONNECTION','')
+    ],
+    'phone' => [
+        'default_region' => env('PHONE_DEFAULT_REGION', 'US'),
     ]
 ];
