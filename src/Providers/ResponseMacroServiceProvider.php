@@ -2,12 +2,15 @@
 
 namespace DrBalcony\NovaCommon\Providers;
 
+use DrBalcony\NovaCommon\Traits\JsonResponseTrait;
 use Illuminate\Http\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ResponseMacroServiceProvider extends ServiceProvider
 {
+    use JsonResponseTrait;
     /**
      * Boot the response macro services for the application.
      *
@@ -16,90 +19,44 @@ class ResponseMacroServiceProvider extends ServiceProvider
     public function register(): void
     {
         Response::macro('success', function ($data = null, $message = null) {
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-                'message' => $message,
-            ], Response::HTTP_OK);
+            return $this->sendResponse($data , $message);
         });
 
         Response::macro('withoutData', function ($message) {
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ], Response::HTTP_OK);
+            return $this->sendResponse([] , $message);
         });
 
-        Response::macro('paginate', function (LengthAwarePaginator $paginate, $data, $message = '') {
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-                'links' => [
-                    'first' => $paginate->url(1),
-                    'last' => $paginate->url($paginate->lastPage()),
-                    'prev' => $paginate->previousPageUrl(),
-                    'next' => $paginate->nextPageUrl(),
-                ],
-                'meta' => [
-                    'current_page' => $paginate->currentPage(),
-                    'last_page' => $paginate->lastPage(),
-                    'path' => $paginate->path(),
-                    'per_page' => $paginate->perPage(),
-                    'total' => $paginate->total(),
-                ],
-                'message' => $message,
-            ], Response::HTTP_OK);
+        // @attention there is no need for $data but because of backward compatibility I did not remove it.
+        Response::macro('paginate', function (LengthAwarePaginator $paginate, $data = null ,  $message = '') {
+            return $this->sendPaginatedResponse($paginate , $message);
         });
 
         Response::macro('created', function ($data, $message = 'Created successfully') {
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-                'message' => $message,
-            ], Response::HTTP_CREATED);
+            return $this->sendResponse($data , $message , ResponseAlias::HTTP_CREATED);
         });
 
         Response::macro('badRequest', function ($message = 'Bad request') {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->sendError($message , [] , ResponseAlias::HTTP_BAD_REQUEST);
         });
 
         Response::macro('unAuthorized', function ($message = 'Unauthorized. You need to login') {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], Response::HTTP_UNAUTHORIZED);
+            return $this->sendError($message , [] , ResponseAlias::HTTP_UNAUTHORIZED);
         });
 
         Response::macro('forbidden', function ($message = 'This action is forbidden') {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], Response::HTTP_FORBIDDEN);
+            return $this->sendError($message , [] , ResponseAlias::HTTP_FORBIDDEN);
         });
 
         Response::macro('notFound', function ($message = 'Not found') {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], Response::HTTP_NOT_FOUND);
+            return $this->sendError($message , [] , ResponseAlias::HTTP_NOT_FOUND);
         });
 
         Response::macro('validationError', function ($errors, $message = 'Validation error') {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-                'errors' => $errors,
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->sendError($message , $errors , ResponseAlias::HTTP_UNPROCESSABLE_ENTITY);
         });
 
-        Response::macro('error', function ($message, $code = Response::HTTP_INTERNAL_SERVER_ERROR) {
-            return response()->json([
-                'success' => false,
-                'message' => $message,
-            ], $code);
+        Response::macro('error', function ($message, $code = ResponseAlias::HTTP_INTERNAL_SERVER_ERROR) {
+            return $this->sendError($message , [] , $code);
         });
     }
 }
