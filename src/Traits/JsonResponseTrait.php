@@ -52,11 +52,19 @@ trait JsonResponseTrait
         $paginator = $this->resolvePaginator($data);
         $transformedData = $this->transformData($data);
 
+        $links = [
+            'first' => $paginator->url(1),
+            'last' => $paginator->url($paginator->lastPage()),
+            'prev' => $paginator->previousPageUrl(),
+            'next' => $paginator->nextPageUrl(),
+        ] ;
+
         $meta = array_merge([
             'current_page' => $paginator->currentPage(),
             'total_items' => $paginator->total(),
             'per_page' => $paginator->perPage(),
             'total_pages' => $paginator->lastPage(),
+            'links' => $links,
         ], $additionalMeta);
 
         return $this->sendResponse($transformedData, $message, Response::HTTP_OK, $meta);
@@ -68,6 +76,7 @@ trait JsonResponseTrait
      * @param string $error
      * @param array<string,mixed> $errorMessages
      * @param int $code
+     * @return JsonResponse
      */
     public function sendError(
         string $error,
