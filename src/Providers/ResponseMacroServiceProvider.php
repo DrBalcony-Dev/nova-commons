@@ -26,8 +26,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             return $this->sendResponse([] , $message);
         });
 
-        // @attention there is no need for $data but because of backward compatibility I did not remove it.
-        Response::macro('paginate', function (LengthAwarePaginator $paginate, $data = null ,  $message = '') {
+        Response::macro('paginate', function (LengthAwarePaginator $paginate , $message = '') {
             return $this->sendPaginatedResponse($paginate , $message);
         });
 
