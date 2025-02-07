@@ -12,7 +12,8 @@
     "illuminate/pagination": "^10.0|^11.0",
     "ext-json": "*",
     "php-amqplib/php-amqplib": "^3.0",
-    "guzzlehttp/guzzle": "^7.9"
+    "guzzlehttp/guzzle": "^7.9",
+    "giggsey/libphonenumber-for-php": "^8.13"
   },
   "autoload": {
     "psr-4": {
