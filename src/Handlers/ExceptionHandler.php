@@ -14,6 +14,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+
 
 class ExceptionHandler implements ExceptionHandlerInterface
 {
@@ -49,7 +51,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
 
             $e instanceof AuthorizationException => Response::forbidden(),
 
-            default => Response::error(message: $this->getErrorMessage($e)),
+            default => Response::error(message: $this->getErrorMessage($e), code: ResponseAlias::HTTP_BAD_REQUEST ),
         };
     }
 

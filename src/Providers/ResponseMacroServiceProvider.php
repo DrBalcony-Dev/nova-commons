@@ -57,7 +57,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             return $traitInstance->sendError($message , $errors , ResponseAlias::HTTP_UNPROCESSABLE_ENTITY);
         });
 
-        Response::macro('error', function ($message, $code = ResponseAlias::HTTP_INTERNAL_SERVER_ERROR) use ($traitInstance) {
+        Response::macro('error', function ($message, $code = ResponseAlias::HTTP_BAD_REQUEST) use ($traitInstance) {
             return $traitInstance->sendError($message , [] , $code);
         });
     }
