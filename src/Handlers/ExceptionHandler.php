@@ -8,6 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Laravel\Prompts\Output\ConsoleOutput;
+use Psr\Log\LogLevel;
+use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -16,20 +19,26 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
-
 class ExceptionHandler implements ExceptionHandlerInterface
 {
-    public function report(Throwable $exception)
+    public function report(Throwable $e)
     {
-        RabbitMQLogger::log(
-            'Exception occurred: ' . $exception->getMessage(), // Message
-            [
-                'exception' => $exception,  // Include full exception details
-                'trace' => $exception->getTraceAsString(),
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-            ], config('nova-common.rabbitmq.queues.exception')
-        );
+        if (!method_exists($e, 'shouldReport') || $e->shouldReport())
+            RabbitMQLogger::log(
+                'Exception occurred: ' . $e->getMessage(), // Message
+                [
+                    'timestamp' => now()->timestamp,
+                    'level' => method_exists($e, 'getLevel') ? $e->getLevel() : LogLevel::ERROR,
+                    'service' => config('app.name'),
+                    'message' => $e->getMessage(),
+                    'details' => [
+                        'code' => method_exists($e, 'getCode') ? $e->getCode() : null,
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                    ]
+                ], config('nova-common.rabbitmq.queues.exception')
+            );
     }
 
     /**
@@ -43,15 +52,16 @@ class ExceptionHandler implements ExceptionHandlerInterface
         return match (true) {
             $e instanceof NotFoundHttpException,
                 $e instanceof RouteNotFoundException,
-                $e instanceof ModelNotFoundException  => Response::notFound('Record not found.'),
-
+                $e instanceof ModelNotFoundException => Response::notFound('Record not found.'),
             $e instanceof ValidationException => Response::validationError($e->errors()),
-
             $e instanceof AuthenticationException => Response::unAuthorized(),
-
             $e instanceof AuthorizationException => Response::forbidden(),
-
-            default => Response::error(message: $this->getErrorMessage($e), code: ResponseAlias::HTTP_BAD_REQUEST ),
+            default => Response::error(
+                message: $this->getErrorMessage($e),
+                code: (method_exists($e, 'getCode') && $e->getCode() > 0) ?
+                    $e->getCode()
+                    : ResponseAlias::HTTP_BAD_REQUEST
+            ),
         };
     }
 
@@ -67,14 +77,14 @@ class ExceptionHandler implements ExceptionHandlerInterface
     /**
      * Render the exception as a response suitable for the console.
      *
-     * @param Throwable|ConsoleOutput $output
-     * @param Throwable $exception
+     * @param OutputInterface $output
+     * @param Throwable $e
      * @return void
      */
-    public function renderForConsole($output, Throwable $exception)
+    public function renderForConsole($output, Throwable $e)
     {
-        $output->writeln('<error>' . $exception->getMessage() . '</error>');
-        $output->writeln('<comment>' . $exception->getTraceAsString() . '</comment>');
+        $output->writeln('<error>' . $e->getMessage() . '</error>');
+        $output->writeln('<comment>' . $e->getTraceAsString() . '</comment>');
     }
 
     public function shouldReport(Throwable $e)
