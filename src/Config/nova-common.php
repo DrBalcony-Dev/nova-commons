@@ -19,5 +19,10 @@ return [
     ],
     'phone' => [
         'default_region' => env('PHONE_DEFAULT_REGION', 'US'),
+    ],
+
+    'permission' => [
+        'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/api/permissions/verify'),
+        'should_log_invalid_request' => env("SHOULD_LOG_INVALID_REQUEST", true),
     ]
 ];
