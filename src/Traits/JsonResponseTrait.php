@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DrBalcony\NovaCommon\Traits;
 
 use Illuminate\Http\JsonResponse;
@@ -14,16 +16,17 @@ trait JsonResponseTrait
      * Send a standardized JSON response
      *
      * @param mixed $result
-     * @param string $message
+     * @param string|null $message
      * @param int $code
      * @param array<string,mixed> $meta
      */
     public function sendResponse(
-        mixed $result,
-        string $message = '',
-        int $code = Response::HTTP_OK,
-        array $meta = []
-    ): JsonResponse {
+        mixed   $result,
+        ?string $message = null,
+        int     $code = Response::HTTP_OK,
+        array   $meta = []
+    ): JsonResponse
+    {
         $response = [
             'success' => true,
             'message' => $message,
@@ -41,14 +44,15 @@ trait JsonResponseTrait
      * Send a paginated JSON response
      *
      * @param LengthAwarePaginator|ResourceCollection $data Paginated data
-     * @param string $message
+     * @param string|null $message
      * @param array<string,mixed> $additionalMeta
      */
     public function sendPaginatedResponse(
-        mixed $data,
-        string $message = '',
-        array $additionalMeta = []
-    ): JsonResponse {
+        mixed   $data,
+        ?string $message = null,
+        array   $additionalMeta = []
+    ): JsonResponse
+    {
         $paginator = $this->resolvePaginator($data);
         $transformedData = $this->transformData($data);
 
@@ -57,7 +61,7 @@ trait JsonResponseTrait
             'last' => $paginator->url($paginator->lastPage()),
             'prev' => $paginator->previousPageUrl(),
             'next' => $paginator->nextPageUrl(),
-        ] ;
+        ];
 
         $meta = array_merge([
             'current_page' => $paginator->currentPage(),
@@ -67,7 +71,11 @@ trait JsonResponseTrait
             'links' => $links,
         ], $additionalMeta);
 
-        return $this->sendResponse($transformedData, $message, Response::HTTP_OK, $meta);
+        return $this->sendResponse(
+            result: $transformedData,
+            message: $message,
+            meta: $meta
+        );
     }
 
     /**
