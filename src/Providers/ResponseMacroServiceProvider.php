@@ -57,8 +57,16 @@ class ResponseMacroServiceProvider extends ServiceProvider
             return $traitInstance->sendError($message , $errors , ResponseAlias::HTTP_UNPROCESSABLE_ENTITY);
         });
 
-        Response::macro('error', function ($message, $code = ResponseAlias::HTTP_BAD_REQUEST) use ($traitInstance) {
+        Response::macro('error', function ($message, $code = ResponseAlias::HTTP_INTERNAL_SERVER_ERROR) use ($traitInstance) {
             return $traitInstance->sendError($message , [] , $code);
+        });
+
+        Response::macro('methodNotAllowed', function ($message = 'Method not allowed') use ($traitInstance) {
+            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_METHOD_NOT_ALLOWED);
+        });
+
+        Response::macro('toManyAttempts', function ($message = 'Too many requests. Please try again later.') use ($traitInstance) {
+            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_TOO_MANY_REQUESTS);
         });
     }
 }

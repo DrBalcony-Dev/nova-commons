@@ -4,6 +4,7 @@ namespace DrBalcony\NovaCommon\Handlers;
 
 use Illuminate\Contracts\Debug\ExceptionHandler as ExceptionHandlerInterface;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -11,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Prompts\Output\ConsoleOutput;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Throwable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -50,18 +52,28 @@ class ExceptionHandler implements ExceptionHandlerInterface
     public function render($request, Throwable $e)
     {
         return match (true) {
-            $e instanceof NotFoundHttpException,
-                $e instanceof RouteNotFoundException,
-                $e instanceof ModelNotFoundException => Response::notFound('Record not found.'),
+            $e instanceof RouteNotFoundException,
+                $e instanceof NotFoundHttpException => Response::notFound('Route not found.'),
+
+            $e instanceof ModelNotFoundException => Response::notFound('Record not found.'),
+
             $e instanceof ValidationException => Response::validationError($e->errors()),
+
             $e instanceof AuthenticationException => Response::unAuthorized(),
+
             $e instanceof AuthorizationException => Response::forbidden(),
+
+            $e instanceof MethodNotAllowedHttpException => Response::methodNotAllowed(),
+
+            $e instanceof ThrottleRequestsException => Response::toManyAttempts(),
+
             default => Response::error(
                 message: $this->getErrorMessage($e),
-                code: (method_exists($e, 'getCode') && $e->getCode() > 0) ?
-                    $e->getCode()
-                    : ResponseAlias::HTTP_BAD_REQUEST
-            ),
+                code:
+                (method_exists($e, 'getCode') && $e->getCode() > 0) ? $e->getCode() :
+                    ((method_exists($e, 'getStatusCode') && $e->getStatusCode()) ? $e->getStatusCode() :
+                        ResponseAlias::HTTP_INTERNAL_SERVER_ERROR)
+            )
         };
     }
 
