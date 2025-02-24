@@ -81,7 +81,7 @@ trait JsonResponseTrait
     public function sendError(
         string $error,
         array $errorMessages = [],
-        int $code = Response::HTTP_BAD_REQUEST
+        int $code = Response::HTTP_INTERNAL_SERVER_ERROR
     ): JsonResponse {
         $response = [
             'success' => false,
