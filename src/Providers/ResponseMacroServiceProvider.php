@@ -111,7 +111,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
 
         Response::macro('error', function (
             string $message,
-            int $code = SymfonyResponse::HTTP_BAD_REQUEST
+            int $code = SymfonyResponse::HTTP_INTERNAL_SERVER_ERROR
         ) use ($traitInstance) {
             return $traitInstance->sendError(
                 error: $message,
