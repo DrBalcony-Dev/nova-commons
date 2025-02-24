@@ -109,5 +109,13 @@ class ResponseMacroServiceProvider extends ServiceProvider
                 code: $code
             );
         });
+
+        Response::macro('methodNotAllowed', function ($message = 'Method not allowed') use ($traitInstance) {
+            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_METHOD_NOT_ALLOWED);
+        });
+
+        Response::macro('toManyAttempts', function ($message = 'Too many requests. Please try again later.') use ($traitInstance) {
+            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_TOO_MANY_REQUESTS);
+        });
     }
 }
