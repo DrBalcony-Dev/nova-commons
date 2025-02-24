@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace DrBalcony\NovaCommon\Providers;
 
 use DrBalcony\NovaCommon\Traits\JsonResponseTrait;
@@ -26,7 +28,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             ?string $message = null
         ) use ($traitInstance) {
             return $traitInstance->sendResponse(
-                result: $data ,
+                result: $data,
                 message: $message
             );
         });
@@ -35,7 +37,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             string $message
         ) use ($traitInstance) {
             return $traitInstance->sendResponse(
-                result: [] ,
+                result: [],
                 message: $message
             );
         });
@@ -45,7 +47,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             ?string $message
         ) use ($traitInstance) {
             return $traitInstance->sendPaginatedResponse(
-                data: $paginate ,
+                data: $paginate,
                 message: $message
             );
         });
@@ -54,14 +56,18 @@ class ResponseMacroServiceProvider extends ServiceProvider
             mixed $data,
             string $message = 'Created successfully'
         )  use ($traitInstance) {
-            return $traitInstance->sendResponse($data , $message , SymfonyResponse::HTTP_CREATED);
+            return $traitInstance->sendResponse(
+                result: $data,
+                message: $message,
+                code: SymfonyResponse::HTTP_CREATED
+            );
         });
 
         Response::macro('badRequest', function (
             string $message = 'Bad request'
         ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
+                error: $message,
                 code: SymfonyResponse::HTTP_BAD_REQUEST
             );
         });
@@ -70,7 +76,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             string $message = 'Unauthorized. You need to login'
         ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
+                error: $message,
                 code: SymfonyResponse::HTTP_UNAUTHORIZED);
         });
 
@@ -78,7 +84,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             string $message = 'This action is forbidden'
         ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
+                error: $message,
                 code: SymfonyResponse::HTTP_FORBIDDEN
             );
         });
@@ -87,7 +93,7 @@ class ResponseMacroServiceProvider extends ServiceProvider
             string $message = 'Not found'
         ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
+                error: $message,
                 code: SymfonyResponse::HTTP_NOT_FOUND
             );
         });
@@ -97,25 +103,36 @@ class ResponseMacroServiceProvider extends ServiceProvider
             string $message = 'Validation error'
         ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
-                errorMessages: $errors ,
+                error: $message,
+                errorMessages: $errors,
                 code: SymfonyResponse::HTTP_UNPROCESSABLE_ENTITY
             );
         });
 
-        Response::macro('error', function ($message, $code = SymfonyResponse::HTTP_BAD_REQUEST) use ($traitInstance) {
+        Response::macro('error', function (
+            string $message,
+            int $code = SymfonyResponse::HTTP_BAD_REQUEST
+        ) use ($traitInstance) {
             return $traitInstance->sendError(
-                error: $message ,
+                error: $message,
                 code: $code
             );
         });
 
-        Response::macro('methodNotAllowed', function ($message = 'Method not allowed') use ($traitInstance) {
-            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_METHOD_NOT_ALLOWED);
+        Response::macro('methodNotAllowed', function (
+            string $message = 'Method not allowed'
+        ) use ($traitInstance) {
+            return $traitInstance->sendError(
+                error: $message,
+                code: SymfonyResponse::HTTP_METHOD_NOT_ALLOWED);
         });
 
-        Response::macro('toManyAttempts', function ($message = 'Too many requests. Please try again later.') use ($traitInstance) {
-            return $traitInstance->sendError($message , [] , ResponseAlias::HTTP_TOO_MANY_REQUESTS);
+        Response::macro('tooManyAttempts', function (
+            string $message = 'Too many requests. Please try again later.'
+        ) use ($traitInstance) {
+            return $traitInstance->sendError(
+                error: $message,
+                code: SymfonyResponse::HTTP_TOO_MANY_REQUESTS);
         });
     }
 }
