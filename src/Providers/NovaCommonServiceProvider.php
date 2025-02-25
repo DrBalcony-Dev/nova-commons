@@ -3,6 +3,7 @@
 namespace DrBalcony\NovaCommon\Providers;
 
 use DrBalcony\NovaCommon\Commands\RabbitMQListenerCommand;
+use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
 use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
 use DrBalcony\NovaCommon\Services\PermissionService;
 use DrBalcony\NovaCommon\Services\PhoneNumberService;
@@ -59,6 +60,7 @@ class NovaCommonServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 RabbitMQListenerCommand::class,
+                RedisCacheCommand::class,
             ]);
         }
 
@@ -66,6 +68,5 @@ class NovaCommonServiceProvider extends ServiceProvider
         /** @var Router $router */
         $router = $this->app['router'];
         $router->aliasMiddleware('permission', CheckPermissionMiddleware::class);
-
     }
 }
