@@ -9,7 +9,6 @@ use DrBalcony\NovaCommon\Services\PermissionService;
 use DrBalcony\NovaCommon\Services\PhoneNumberService;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
 use DrBalcony\NovaCommon\Services\RabbitMQPublisher;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,6 +26,8 @@ class NovaCommonServiceProvider extends ServiceProvider
         });
 
         $this->app->register(ResponseMacroServiceProvider::class);
+        
+        $this->app->register(CommandBlockerServiceProvider::class);
 
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
