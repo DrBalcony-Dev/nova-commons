@@ -156,7 +156,7 @@ class NovaGuard implements Guard
         }
 
         try {
-            $service = new AuthenticationService();
+            $service = app(AuthenticationService::class);
             $userData = $service->getUserWithToken($token);
 
             if (empty($userData)) {
