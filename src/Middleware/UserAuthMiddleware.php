@@ -21,7 +21,7 @@ class UserAuthMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (is_null(Auth::guard(NovaGuard::GUARD_NAME)->id())) {
-            return Response::forbidden('Authentication is required to access this route.');
+            return Response::unAuthorized('Authentication is required. Token is either missing or invalid.');
         }
 
         return $next($request);
