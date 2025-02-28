@@ -16,12 +16,8 @@ class NovaGuardServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $useNovaGuard = config('nova-common.use_nova_guard');
-
-        if ($useNovaGuard) {
-            Auth::extend('nova', function (Container $app) {
-                return new NovaGuard($app['request']);
-            });
-        }
+        Auth::extend(NovaGuard::GUARD_NAME, function (Container $app) {
+            return new NovaGuard($app['request']);
+        });
     }
 }

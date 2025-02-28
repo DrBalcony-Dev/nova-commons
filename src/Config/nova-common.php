@@ -27,6 +27,4 @@ return [
         'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/api/permissions/verify'),
         'should_log_invalid_request' => env("SHOULD_LOG_INVALID_REQUEST", true),
     ],
-
-    'use_nova_guard' => env('COMMONS_USE_NOVA_GUARD', false),
 ];

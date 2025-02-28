@@ -3,6 +3,7 @@
 namespace DrBalcony\NovaCommon\Middleware;
 
 use Closure;
+use DrBalcony\NovaCommon\Utils\Auth\NovaGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -19,7 +20,7 @@ class UserAuthMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (is_null(Auth::id())) {
+        if (is_null(Auth::guard(NovaGuard::GUARD_NAME)->id())) {
             return Response::forbidden('Authentication is required to access this route.');
         }
 

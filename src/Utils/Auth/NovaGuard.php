@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Log;
  */
 class NovaGuard implements Guard
 {
+    const GUARD_NAME = 'nova';
+
     /**
      * Auth user instance
      *
