@@ -5,6 +5,9 @@ namespace DrBalcony\NovaCommon\Providers;
 use DrBalcony\NovaCommon\Commands\RabbitMQListenerCommand;
 use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
 use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
+use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
+use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
+use DrBalcony\NovaCommon\Services\AuthenticationService;
 use DrBalcony\NovaCommon\Services\PermissionService;
 use DrBalcony\NovaCommon\Services\PhoneNumberService;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
@@ -29,6 +32,8 @@ class NovaCommonServiceProvider extends ServiceProvider
         
         $this->app->register(CommandBlockerServiceProvider::class);
 
+        $this->app->register(NovaGuardServiceProvider::class);
+
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
         $this->app->singleton(RabbitMQPublisher::class, function ($app) {
@@ -42,6 +47,10 @@ class NovaCommonServiceProvider extends ServiceProvider
         // Register permission service
         $this->app->singleton(PermissionService::class, function ($app) {
             return new PermissionService();
+        });
+
+        $this->app->singleton(AuthenticationService::class, function ($app) {
+            return new AuthenticationService();
         });
 
         $this->mergeConfigFrom(__DIR__ . '/../Config/nova-common.php', 'nova-common');
@@ -69,5 +78,7 @@ class NovaCommonServiceProvider extends ServiceProvider
         /** @var Router $router */
         $router = $this->app['router'];
         $router->aliasMiddleware('permission', CheckPermissionMiddleware::class);
+        $router->aliasMiddleware('nova-user-auth', UserAuthMiddleware::class);
+        $router->aliasMiddleware('nova-client-auth', ClientAuthMiddleware::class);
     }
 }
