@@ -10,10 +10,11 @@ use Illuminate\Support\ServiceProvider;
 class CommandBlockerServiceProvider extends ServiceProvider
 {
 
-    protected $blockedCommands = [
+    protected array $blockedCommands = [
 //         'db:seed',
 //         'redis:cache flush',
          'migrate:fresh',
+         'migrate:refresh',
          'migrate:reset',
     ];
 
