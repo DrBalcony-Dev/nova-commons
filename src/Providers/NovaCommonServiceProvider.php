@@ -7,6 +7,7 @@ use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
 use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
 use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
 use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
+use DrBalcony\NovaCommon\Services\AuthenticationService;
 use DrBalcony\NovaCommon\Services\PermissionService;
 use DrBalcony\NovaCommon\Services\PhoneNumberService;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
@@ -46,6 +47,10 @@ class NovaCommonServiceProvider extends ServiceProvider
         // Register permission service
         $this->app->singleton(PermissionService::class, function ($app) {
             return new PermissionService();
+        });
+
+        $this->app->singleton(AuthenticationService::class, function ($app) {
+            return new AuthenticationService();
         });
 
         $this->mergeConfigFrom(__DIR__ . '/../Config/nova-common.php', 'nova-common');
