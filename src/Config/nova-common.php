@@ -16,7 +16,7 @@ return [
         'base-url'=> env('EARTH_BASE_URL', 'https://nova.drbalcony.dev/earth'),
         'auth-cache-driver'=> env('EARTH_CACHE_DRIVER', 'redis'), // database, file ...
         'auth-cache-connection'=> env('EARTH_CACHE_CONNECTION', 'default'),
-        'client-token'=> env('EARTH_CACHE_CONNECTION','')
+        'client-token'=> env('EARTH_CLIENT_TOKEN','')
     ],
 
     'phone' => [
