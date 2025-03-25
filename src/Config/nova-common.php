@@ -27,4 +27,8 @@ return [
         'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/api/permissions/verify'),
         'should_log_invalid_request' => env("SHOULD_LOG_INVALID_REQUEST", true),
     ],
+    /*
+     * Health check configuration
+     */
+    'health' => require __DIR__ . '/health-check.php',
 ];
