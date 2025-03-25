@@ -30,6 +30,8 @@ class NovaCommonServiceProvider extends ServiceProvider
             return new PhoneNumberService();
         });
 
+        $this->app->register(SentryServiceProvider::class);
+
         $this->app->register(ResponseMacroServiceProvider::class);
 
         $this->app->register(CommandBlockerServiceProvider::class);
