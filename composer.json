@@ -13,7 +13,11 @@
     "ext-json": "*",
     "php-amqplib/php-amqplib": "^3.0",
     "guzzlehttp/guzzle": "^7.9",
-    "giggsey/libphonenumber-for-php": "^8.13"
+    "giggsey/libphonenumber-for-php": "^8.13",
+    "sentry/sentry-laravel": "^4.13",
+    "spatie/laravel-health": "^1.33",
+    "spatie/security-advisories-health-check": "^1.2",
+    "laravel/slack-notification-channel": "^3.5"
   },
   "autoload": {
     "psr-4": {
