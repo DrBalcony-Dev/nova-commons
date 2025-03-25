@@ -24,15 +24,22 @@ class NovaCommonServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->mergeConfigFrom(__DIR__ . '/../Config/nova-common.php', 'nova-common');
+
         $this->app->singleton(PhoneNumberService::class, static function () {
             return new PhoneNumberService();
         });
 
+        $this->app->register(SentryServiceProvider::class);
+
         $this->app->register(ResponseMacroServiceProvider::class);
-        
+
         $this->app->register(CommandBlockerServiceProvider::class);
 
         $this->app->register(NovaGuardServiceProvider::class);
+
+        // Register health check provider
+        $this->app->register(HealthServiceProvider::class);
 
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
@@ -52,8 +59,6 @@ class NovaCommonServiceProvider extends ServiceProvider
         $this->app->singleton(AuthenticationService::class, function ($app) {
             return new AuthenticationService();
         });
-
-        $this->mergeConfigFrom(__DIR__ . '/../Config/nova-common.php', 'nova-common');
     }
 
     /**
@@ -72,6 +77,9 @@ class NovaCommonServiceProvider extends ServiceProvider
                 RabbitMQListenerCommand::class,
                 RedisCacheCommand::class,
             ]);
+
+            // Load migrations
+            $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         }
 
         // Register middleware
@@ -80,5 +88,8 @@ class NovaCommonServiceProvider extends ServiceProvider
         $router->aliasMiddleware('permission', CheckPermissionMiddleware::class);
         $router->aliasMiddleware('nova-user-auth', UserAuthMiddleware::class);
         $router->aliasMiddleware('nova-client-auth', ClientAuthMiddleware::class);
+
+        // Load routes
+        $this->loadRoutesFrom(__DIR__ . '/../routes/health.php');
     }
 }
