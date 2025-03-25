@@ -27,4 +27,29 @@ return [
         'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/api/permissions/verify'),
         'should_log_invalid_request' => env("SHOULD_LOG_INVALID_REQUEST", true),
     ],
+
+    'reporting' => [
+        // Exceptions that shouldn't be reported
+        'dont_report' => [
+            \Illuminate\Validation\ValidationException::class,
+        ],
+
+        // RabbitMQ reporting configuration
+        'rabbitmq' => [
+            'enabled' => env('NOVA_REPORT_RABBITMQ_ENABLED', false),
+        ],
+
+        // Sentry reporting configuration
+        'sentry' => [
+            'enabled' => env('NOVA_REPORT_SENTRY_ENABLED', true),
+            'include_context' => true,
+            'traces_sample_rate' => env('SENTRY_TRACES_SAMPLE_RATE', 0.1),
+        ],
+    ],
+
+
+    /*
+     * Health check configuration
+     */
+    'health' => require __DIR__ . '/health-check.php',
 ];
