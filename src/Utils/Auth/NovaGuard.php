@@ -88,6 +88,18 @@ class NovaGuard implements Guard
     }
 
     /**
+     * Return user roles or []].
+     *
+     * @return array|null
+     */
+    public function roles(): null|array
+    {
+        $user = $this->user();
+
+        return $user->roles ?? [];
+    }
+
+    /**
      * Manually set user as logged in.
      *
      * @param User|null $user
