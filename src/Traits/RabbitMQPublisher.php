@@ -3,11 +3,9 @@
 namespace DrBalcony\NovaCommon\Traits;
 
 use DrBalcony\NovaCommon\Enums\Priority;
+use DrBalcony\NovaCommon\Facades\Publisher;
 use Exception;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
 
 trait RabbitMQPublisher
 {
@@ -25,9 +23,6 @@ trait RabbitMQPublisher
     public function pushRawToRabbitMQ(array $data, string $queueName, array $properties = [], string $exchangeName = ''): void
     {
         try {
-            $connection = AMQPStreamConnection::create_connection([Config::get('nova-common.rabbitmq')]);
-            $channel = $connection->channel();
-
             $properties = array_merge([
                 'content_encoding' => 'utf-8',
                 'content_type' => 'application/json',
@@ -35,11 +30,12 @@ trait RabbitMQPublisher
                 'delivery_mode' => 2,
             ], $properties);
 
-            $msg = new AMQPMessage(json_encode($data), $properties);
-            $channel->basic_publish($msg, $exchangeName, $queueName);
-
-            $channel->close();
-            $connection->close();
+            // Use the Publisher facade which uses the PublisherClient
+            $success = Publisher::publish($queueName, $data, $properties);
+            
+            if (!$success) {
+                throw new Exception('Failed to publish message to RabbitMQ');
+            }
         } catch (\Exception $e) {
             Log::error('RabbitMQ publishing error: '.$e->getMessage(), ['exception' => $e]);
 
