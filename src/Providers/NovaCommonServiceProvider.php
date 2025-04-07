@@ -4,6 +4,8 @@ namespace DrBalcony\NovaCommon\Providers;
 
 use DrBalcony\NovaCommon\Commands\RabbitMQListenerCommand;
 use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
+use DrBalcony\NovaCommon\Commands\PublishRabbitMQMessage;
+use DrBalcony\NovaCommon\Commands\TestRabbitMQConnection;
 use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
 use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
 use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
@@ -12,6 +14,7 @@ use DrBalcony\NovaCommon\Services\PermissionService;
 use DrBalcony\NovaCommon\Services\PhoneNumberService;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
 use DrBalcony\NovaCommon\Services\RabbitMQPublisher;
+use DrBalcony\NovaCommon\Services\RabbitMQ\PublisherClient;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,6 +46,16 @@ class NovaCommonServiceProvider extends ServiceProvider
 
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
+        // Register PublisherClient for RabbitMQ
+        $this->app->singleton(PublisherClient::class, function ($app) {
+            return new PublisherClient();
+        });
+
+        // Bind the PublisherClient to the 'rabbitmq.publisher' service for the facade
+        $this->app->singleton('rabbitmq.publisher', function ($app) {
+            return $app->make(PublisherClient::class);
+        });
+
         $this->app->singleton(RabbitMQPublisher::class, function ($app) {
             return new RabbitMQPublisher();
         });
@@ -70,12 +83,15 @@ class NovaCommonServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../Config/nova-common.php' => config_path('nova-common.php'),
+            __DIR__ . '/../Config/rabbitmq-connection.php' => config_path('rabbitmq-connection.php'),
         ]);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
                 RabbitMQListenerCommand::class,
                 RedisCacheCommand::class,
+                PublishRabbitMQMessage::class,
+                TestRabbitMQConnection::class,
             ]);
 
             // Load migrations
