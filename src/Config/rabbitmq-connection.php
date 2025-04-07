@@ -65,23 +65,24 @@ return [
      * - passphrase: Password for the private key if it's encrypted
      */
     'ssl_options' => [
+        // TODO temporarily removed them to handle
         /*
          * The path to the CA certificate file.
          * Default: null
          */
-        'cafile' => env('RABBITMQ_SSL_CAFILE', null),
+//        'cafile' => env('RABBITMQ_SSL_CAFILE', null),
         
         /*
          * The path to the client certificate file.
          * Default: null
          */
-        'local_cert' => env('RABBITMQ_SSL_CERT', null),
+//        'local_cert' => env('RABBITMQ_SSL_CERT', null),
         
         /*
          * The path to the client key file.
          * Default: null
          */
-        'local_pk' => env('RABBITMQ_SSL_KEY', null),
+//        'local_pk' => env('RABBITMQ_SSL_KEY', null),
         
         /*
          * Whether to verify the server certificate.
