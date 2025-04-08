@@ -83,8 +83,11 @@ class NovaCommonServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../Config/nova-common.php' => config_path('nova-common.php'),
+        ], 'nova-commons-config');
+
+        $this->publishes([
             __DIR__ . '/../Config/rabbitmq-connection.php' => config_path('rabbitmq-connection.php'),
-        ]);
+        ], 'config');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
