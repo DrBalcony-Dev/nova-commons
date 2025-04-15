@@ -102,6 +102,8 @@ class NovaCommonServiceProvider extends ServiceProvider
 
                 // Redis commands
                 RedisCacheCommand::class,
+                PublishRabbitMQMessage::class,
+                TestRabbitMQConnection::class,
             ]);
 
             // Load migrations
