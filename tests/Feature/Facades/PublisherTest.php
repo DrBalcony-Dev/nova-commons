@@ -13,7 +13,7 @@ it('publishes a message using the facade', function () {
         ->andReturn(true);
 
     // Bind the mock to the container
-    App::instance('rabbitmq.publisher', $mockPublisherClient);
+    App::instance('app.rabbitmq.publisher', $mockPublisherClient);
 
     // Call the facade method
     $result = Publisher::publish('test_queue', ['message' => 'test'], ['priority' => 1]);
