@@ -4,7 +4,7 @@ namespace DrBalcony\NovaCommon\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use DrBalcony\NovaCommon\Commands\ConsumeCommand;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\ConsumeCommand;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
 use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
 use DrBalcony\NovaCommon\Services\PermissionService;

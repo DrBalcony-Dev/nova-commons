@@ -1,6 +1,6 @@
 <?php
 
-namespace DrBalcony\NovaCommon\Commands;
+namespace DrBalcony\NovaCommon\Commands\RabbitMQ;
 
 use Exception;
 use Illuminate\Support\Str;
