@@ -2,21 +2,26 @@
 
 namespace DrBalcony\NovaCommon\Providers;
 
-use DrBalcony\NovaCommon\Commands\RabbitMQListenerCommand;
-use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
-use DrBalcony\NovaCommon\Commands\PublishRabbitMQMessage;
-use DrBalcony\NovaCommon\Commands\TestRabbitMQConnection;
-use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
-use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
-use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
-use DrBalcony\NovaCommon\Services\AuthenticationService;
-use DrBalcony\NovaCommon\Services\PermissionService;
-use DrBalcony\NovaCommon\Services\PhoneNumberService;
-use DrBalcony\NovaCommon\Services\RabbitMQLogger;
-use DrBalcony\NovaCommon\Services\RabbitMQPublisher;
-use DrBalcony\NovaCommon\Services\RabbitMQ\PublisherClient;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use DrBalcony\NovaCommon\Commands\ConsumeCommand;
+use DrBalcony\NovaCommon\Services\RabbitMQLogger;
+use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
+use DrBalcony\NovaCommon\Services\PermissionService;
+use DrBalcony\NovaCommon\Services\RabbitMQPublisher;
+use DrBalcony\NovaCommon\Services\PhoneNumberService;
+use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
+use DrBalcony\NovaCommon\Services\AuthenticationService;
+use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
+use DrBalcony\NovaCommon\Services\RabbitMQ\ConsumerClient;
+use DrBalcony\NovaCommon\Services\RabbitMQ\PublisherClient;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\ConsumeTestCommand;
+use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
+use App\Console\Commands\RabbitMQ\TestConsumerConnectionCommand;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\PublishRabbitMQMessage;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\TestRabbitMQConnection;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\RabbitMQListenerCommand;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\PublishTestMessageCommand;
 
 class NovaCommonServiceProvider extends ServiceProvider
 {
@@ -46,16 +51,11 @@ class NovaCommonServiceProvider extends ServiceProvider
 
         $this->app->singleton('DrBalcony\\NovaCommon\\Handlers\\ExceptionHandler');
 
-        // Register PublisherClient for RabbitMQ
-        $this->app->singleton(PublisherClient::class, function ($app) {
-            return new PublisherClient();
-        });
+        $this->registerRabbitClients();
 
-        // Bind the PublisherClient to the 'rabbitmq.publisher' service for the facade
-        $this->app->singleton('rabbitmq.publisher', function ($app) {
-            return $app->make(PublisherClient::class);
-        });
+        $this->registerFacades();
 
+        // TODO check if this is needed and remove it if not
         $this->app->singleton(RabbitMQPublisher::class, function ($app) {
             return new RabbitMQPublisher();
         });
@@ -91,10 +91,17 @@ class NovaCommonServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                RabbitMQListenerCommand::class,
-                RedisCacheCommand::class,
+                // RabbitMQ commands
+                ConsumeCommand::class,
+                ConsumeTestCommand::class,
                 PublishRabbitMQMessage::class,
                 TestRabbitMQConnection::class,
+                PublishTestMessageCommand::class,
+                TestConsumerConnectionCommand::class,
+                RabbitMQListenerCommand::class, // TODO remove this command after checking if it's not used anywhere.
+
+                // Redis commands
+                RedisCacheCommand::class,
             ]);
 
             // Load migrations
@@ -110,5 +117,28 @@ class NovaCommonServiceProvider extends ServiceProvider
 
         // Load routes
         $this->loadRoutesFrom(__DIR__ . '/../routes/health.php');
+    }
+
+    private function registerFacades(): void
+    {
+        $this->app->singleton('app.rabbitmq.consumer', function ($app) {
+            return new ConsumerClient();
+        });
+
+        $this->app->singleton('app.rabbitmq.publisher', function ($app) {
+            return new PublisherClient();
+        });
+    }
+
+    private function registerRabbitClients(): void
+    {
+        // Register both ConsumerClient and PublisherClient as singletons.
+        $this->app->singleton(ConsumerClient::class, function ($app) {
+            return new ConsumerClient();
+        });
+
+        $this->app->singleton(PublisherClient::class, function ($app) {
+            return new PublisherClient();
+        });
     }
 }
