@@ -1,10 +1,15 @@
 <?php
 
-namespace DrBalcony\NovaCommon\Commands;
+namespace DrBalcony\NovaCommon\Commands\RabbitMQ;
 use Illuminate\Console\Command;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
+/**
+ * @deprecated Use ConsumeCommand instead.
+ * 
+ * TODO remove this command after checking if it's not used anywhere.
+ */
 class RabbitMQListenerCommand extends Command
 {
     /**

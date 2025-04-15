@@ -1,6 +1,6 @@
 <?php
 
-namespace DrBalcony\NovaCommon\Commands;
+namespace DrBalcony\NovaCommon\Commands\RabbitMQ;
 
 use DrBalcony\NovaCommon\Services\RabbitMQ\PublisherClient;
 use Illuminate\Console\Command;
