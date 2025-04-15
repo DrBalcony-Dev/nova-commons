@@ -2,9 +2,11 @@
 
 namespace DrBalcony\NovaCommon\Services\RabbitMQ;
 
+use Exception;
 use Illuminate\Support\Facades\Log;
-use PhpAmqpLib\Connection\AMQPSSLConnection;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Connection\AbstractConnection;
+use PhpAmqpLib\Connection\AMQPConnectionConfig;
+use PhpAmqpLib\Connection\AMQPConnectionFactory;
 use PhpAmqpLib\Message\AMQPMessage;
 
 /**
@@ -18,7 +20,7 @@ class PublisherClient
     /**
      * The RabbitMQ connection instance.
      *
-     * @var AMQPStreamConnection|AMQPSSLConnection|null
+     * @var AbstractConnection|null
      */
     private $connection = null;
 
@@ -138,11 +140,84 @@ class PublisherClient
     }
 
     /**
-     * Initializes a new RabbitMQ connection.
+     * Creates and returns a configured AMQPConnectionConfig object based on application config.
      *
-     * This method creates a new connection to the RabbitMQ server using the
-     * configuration options specified in the `config/rabbitmq-connection.php` file.
-     * It will use SSL if the use_ssl option is set to true in the configuration.
+     * @return AMQPConnectionConfig
+     */
+    protected function createConnectionConfig(): AMQPConnectionConfig
+    {
+        $config = new AMQPConnectionConfig;
+
+        // Set connection details
+        $config->setHost(config('rabbitmq-connection.host', '127.0.0.1'));
+        $config->setPort((int) config('rabbitmq-connection.port', 5672));
+        $config->setUser(config('rabbitmq-connection.user', 'guest'));
+        $config->setPassword(config('rabbitmq-connection.password', 'guest'));
+        $config->setVhost(config('rabbitmq-connection.vhost', '/'));
+
+        // Authentication settings
+        $config->setLoginMethod(config('rabbitmq-connection.login_method', 'AMQPLAIN'));
+        $config->setLocale(config('rabbitmq-connection.locale', 'en_US'));
+
+        // Connection timeouts and keep-alive
+        $config->setConnectionTimeout((float) config('rabbitmq-connection.connection_timeout', 3.0));
+        $config->setReadTimeout((float) config('rabbitmq-connection.read_timeout', 3.0));
+        $config->setWriteTimeout((float) config('rabbitmq-connection.write_timeout', 3.0));
+        $config->setKeepalive((bool) config('rabbitmq-connection.keepalive', false));
+        $config->setHeartbeat((int) config('rabbitmq-connection.heartbeat', 0));
+        $config->setChannelRPCTimeout((float) config('rabbitmq-connection.channel_rpc_timeout', 0.0));
+
+        // SSL configuration
+        if ((bool) config('rabbitmq-connection.use_ssl', false)) {
+            $config->setIsSecure(true);
+
+            // SSL CA Certificate
+            if ($caCert = config('rabbitmq-connection.ssl_options.cafile')) {
+                $config->setSslCaCert($caCert);
+            }
+
+            // SSL CA Path
+            if ($caPath = config('rabbitmq-connection.ssl_options.capath')) {
+                $config->setSslCaPath($caPath);
+            }
+
+            // SSL Client Certificate
+            if ($cert = config('rabbitmq-connection.ssl_options.local_cert')) {
+                $config->setSslCert($cert);
+            }
+
+            // SSL Client Key
+            if ($key = config('rabbitmq-connection.ssl_options.local_key')) {
+                $config->setSslKey($key);
+            }
+
+            // SSL Verify Options
+            $config->setSslVerify(config('rabbitmq-connection.ssl_options.verify_peer', false));
+            $config->setSslVerifyName(config('rabbitmq-connection.ssl_options.verify_peer_name', false));
+
+            // SSL Passphrase
+            if ($passphrase = config('rabbitmq-connection.ssl_options.passphrase')) {
+                $config->setSslPassPhrase($passphrase);
+            }
+        }
+
+        // Connection Name
+        if ($connectionName = config('rabbitmq-connection.connection_name')) {
+            $config->setConnectionName($connectionName);
+        }
+
+        // IO Type - default to stream
+        $ioType = config('rabbitmq-connection.io_type', AMQPConnectionConfig::IO_TYPE_STREAM);
+        $config->setIoType($ioType);
+
+        // Other settings
+        $config->setIsLazy(config('rabbitmq-connection.lazy', false));
+
+        return $config;
+    }
+
+    /**
+     * Initializes a new RabbitMQ connection using AMQPConnectionFactory and AMQPConnectionConfig.
      *
      * @return bool True if connection was successful, false otherwise
      */
@@ -153,87 +228,28 @@ class PublisherClient
         }
 
         try {
-            $host = config('rabbitmq-connection.host');
-            $port = (int) config('rabbitmq-connection.port');
-            $user = config('rabbitmq-connection.user');
-            $password = config('rabbitmq-connection.password');
-            $vhost = config('rabbitmq-connection.vhost');
-
-            // Determine whether to use SSL
-            $useSSL = (bool) config('rabbitmq-connection.use_ssl', false);
-            $sslOptions = config('rabbitmq-connection.ssl_options', []);
-
-            // Additional optional parameters
-            $options = [
-                'insist' => config('rabbitmq-connection.insist', false),
-                'login_method' => config('rabbitmq-connection.login_method', 'AMQPLAIN'),
-                'login_response' => null, // Can be computed based on login_method
-                'locale' => config('rabbitmq-connection.locale', 'en_US'),
-                'connection_timeout' => config('rabbitmq-connection.connection_timeout', 3.0),
-                'read_write_timeout' => config('rabbitmq-connection.read_write_timeout', 3.0),
-                'context' => null, // SSL context options
-                'keepalive' => config('rabbitmq-connection.keepalive', false),
-                'heartbeat' => config('rabbitmq-connection.heartbeat', 0),
-                'channel_rpc_timeout' => config('rabbitmq-connection.channel_rpc_timeout', 0.0),
-            ];
-
-            // Validate SSL configuration if SSL is enabled
-            if ($useSSL) {
-                if (empty($sslOptions['cafile']) && empty($sslOptions['local_cert'])) {
-                    $this->lastError = 'SSL is enabled but neither cafile nor local_cert is set. One of these must be provided for SSL to work.';
-                    Log::warning('RabbitMQ SSL Configuration Warning: '.$this->lastError);
-                }
-
-                // Ensure security options are explicitly set
-                $sslOptions['verify_peer'] = $sslOptions['verify_peer'] ?? false;
-                $sslOptions['verify_peer_name'] = $sslOptions['verify_peer_name'] ?? false;
-            }
+            // Create connection config
+            $config = $this->createConnectionConfig();
 
             // Log connection attempt
-            Log::debug('Connecting to RabbitMQ '.($useSSL ? 'with SSL' : 'without SSL'), [
-                'host' => $host,
-                'port' => $port,
-                'user' => $user,
-                'vhost' => $vhost,
-                'use_ssl' => $useSSL,
-                'ssl_options' => $useSSL ? [
-                    'verify_peer' => $sslOptions['verify_peer'],
-                    'verify_peer_name' => $sslOptions['verify_peer_name'],
-                ] : null,
+            Log::debug('Connecting to RabbitMQ '.($config->isSecure() ? 'with SSL' : 'without SSL'), [
+                'host' => $config->getHost(),
+                'port' => $config->getPort(),
+                'user' => $config->getUser(),
+                'vhost' => $config->getVhost(),
+                'use_ssl' => $config->isSecure(),
+                'io_type' => $config->getIoType(),
+                'heartbeat' => $config->getHeartbeat(),
             ]);
 
-            // Create a new connection to RabbitMQ using key-based parameters
-            if ($useSSL) {
-                $this->connection = new AMQPSSLConnection(
-                    $host,
-                    $port,
-                    $user,
-                    $password,
-                    $vhost,
-                    $sslOptions,
-                    $options
-                );
-                Log::info('Successfully connected to RabbitMQ with SSL');
-            } else {
-                $this->connection = new AMQPStreamConnection(
-                    $host,
-                    $port,
-                    $user,
-                    $password,
-                    $vhost,
-                    $options['insist'],
-                    $options['login_method'],
-                    $options['login_response'],
-                    $options['locale'],
-                    $options['connection_timeout'],
-                    $options['read_write_timeout'],
-                    null, // IO
-                    $options['keepalive'],
-                    $options['heartbeat'],
-                    $options['channel_rpc_timeout']
-                );
-                Log::info('Successfully connected to RabbitMQ without SSL');
-            }
+            // Create connection using factory
+            $this->connection = AMQPConnectionFactory::create($config);
+
+            // Log success
+            Log::info('Successfully connected to RabbitMQ', [
+                'secure' => $config->isSecure() ? 'Yes' : 'No',
+                'io_type' => $config->getIoType(),
+            ]);
 
             // Create a new channel on the connection
             $this->channel = $this->connection->channel();
