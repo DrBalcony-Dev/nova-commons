@@ -1,6 +1,6 @@
 {
   "name": "drbalcony/nova-commons",
-  "version": "2.11.1",
+  "version": "2.11.3",
   "description": "A Laravel package providing common functionalities such as client authentication, exception handling, logging, and JSON response macros.",
   "type": "library",
   "license": "MIT",
@@ -31,6 +31,14 @@
         "DrBalcony\\NovaCommon\\Providers\\NovaCommonServiceProvider",
         "DrBalcony\\NovaCommon\\Providers\\ResponseMacroServiceProvider"
       ]
+    },
+    "hooks": {
+      "pre-commit": [
+        "composer validate-namespaces"
+      ],
+      "pre-push": [
+        "composer validate-namespaces"
+      ]
     }
   },
   "require-dev": {
@@ -38,7 +46,12 @@
     "orchestra/testbench": "^8.33"
   },
   "scripts": {
-    "test": "src/Providers/vendor/bin/phpunit"
+    "test": "vendor/bin/pest",
+    "validate-namespaces": "php validate-namespaces.php",
+    "pre-release": [
+      "@validate-namespaces",
+      "@test"
+    ]
   },
   "config": {
     "allow-plugins": {
