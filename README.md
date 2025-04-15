@@ -56,39 +56,137 @@ Add the following to your composer.json:
    RabbitMQLogger::log('Account created.', ['user_id' => 489,'name' => 'John Doe'], 'custom-log-queue-name');
    ```
 
-8. Rabbit-mq listener:
-   ```bash
-   // listen custom queue or the 'default'
-   php artisan nova-common:listen-rabbitmq {queue?}
-   ```
-
-9. RabbitmqPublisher Service:
-   It's a service with singleton connection manager. Use it by dependency injection or creating service object.
+8. RabbitMQ Publisher and Consumer Facades:
    ```php
-   class SomeController extends Controller
-   {
-       protected $rabbitMQPublisher;
+   use DrBalcony\NovaCommon\Facades\Publisher;
+   use DrBalcony\NovaCommon\Facades\Consumer;
    
-       public function __construct(RabbitMQPublisher $rabbitMQPublisher)
-       {
-           // Inject RabbitMQPublisher into the controller
-           $this->rabbitMQPublisher = $rabbitMQPublisher;
-       }
+   // Publish a message to a queue
+   Publisher::publish('queue_name', ['message' => 'Hello World'], ['priority' => 1]);
    
-       public function publishMessage(Request $request)
-       {
-           // Call the publish method from RabbitMQPublisher
-           $message = "This is a test message.";
-           $queue = "my_queue";  // Specify the queue name
+   // Consume messages from a queue
+   Consumer::consume('queue_name', function($message) {
+       // Process the message
+       $data = json_decode($message->getBody(), true);
+       // Your handling logic here
+   }, ['prefetch_count' => 5]);
    
-           $this->rabbitMQPublisher->publish($message, $queue);
+   // Process messages with a timeout
+   Consumer::processMessages(30); // Process for 30 seconds
    
-           return response()->json(['success' => true, 'message' => 'Message published successfully.']);
-       }
-   }
+   // Stop consuming and close connections
+   Consumer::stopConsuming();
+   Consumer::close();
    ```
 
-10. Redis Cache Management:
+9. RabbitMQ Commands:
+   ```bash
+   # Publish a message to a queue
+   php artisan rabbitmq:publish queue_name '{"key":"value"}' --properties='{"priority":1}'
+   
+   # Publish test message(s)
+   php artisan rabbitmq:publish-test --queue=test_queue --message="Test message" --count=5
+   
+   # Consume messages from a queue with options
+   php artisan rabbitmq:consume --queue=queue_name --sleep=3 --tries=3 --backoff=0 --timeout=60 --prefetch-count=1
+   
+   # Consume and display test messages
+   php artisan rabbitmq:consume-test --queue=test_queue --timeout=30 --count=10
+   
+   # Test RabbitMQ connection (For publisher client)
+   php artisan rabbitmq:test-connection --queue=test_queue
+   
+   # Test consumer connection
+   php artisan rabbitmq:test-consumer-connection --queue=test_queue --timeout=10
+   ```
+
+10. Implementing Custom Consumer Job:
+    
+    First, extend the `ConsumerJob` abstract class:
+    ```php
+    <?php
+    
+    namespace App\Jobs;
+    
+    use DrBalcony\NovaCommon\Jobs\ConsumerJob;
+    use App\Listeners\EmailEventListener;
+    use App\Listeners\SmsEventListener;
+    
+    class MyCustomConsumerJob extends ConsumerJob
+    {
+        /**
+         * Define the mapping between queue names and their handler classes.
+         *
+         * @return array<string, string>
+         */
+        public function consumers(): array
+        {
+            return [
+                'email_events' => EmailEventListener::class,
+                'sms_events' => SmsEventListener::class,
+                // Add more queue-to-listener mappings as needed
+            ];
+        }
+    }
+    ```
+    
+    Then, register your consumer job class in the `nova-common.php` config:
+    ```php
+    // config/nova-common.php
+    return [
+        'rabbitmq' => [
+            // Other configs...
+            
+            'consume' => [
+                // Specify your custom consumer job class
+                'job' => \App\Jobs\MyCustomConsumerJob::class,
+            ]
+        ],
+        // Other configs...
+    ];
+    ```
+    
+    The listener class should handle the message payload:
+    ```php
+    <?php
+    
+    namespace App\Listeners;
+    
+    class EmailEventListener
+    {
+        public function __construct(protected array $payload)
+        {
+        }
+        
+        public function handle(): void
+        {
+            // Access the message data
+            $data = $this->payload['data'];
+            
+            // Your message handling logic here
+        }
+    }
+    ```
+
+11. Supervisor Configuration Example:
+    ```ini
+    [program:rabbitmq-consumer]
+    directory=/path/to/your/project
+    process_name=%(program_name)s_%(process_num)02d
+    command=php artisan rabbitmq:consume --queue=your_queue --verbose --sleep=3 --tries=3 --backoff=300 --timeout=40000 --prefetch-count=1
+    numprocs=1
+    autostart=true
+    autorestart=true
+    stopasgroup=true
+    killasgroup=true
+    stopwaitsecs=3600
+    stdout_logfile=/dev/stdout
+    stdout_logfile_maxbytes=0
+    stderr_logfile=/dev/stderr
+    stderr_logfile_maxbytes=0
+    ```
+
+12. Redis Cache Management:
     ```bash
     // Manage Redis cache with various commands
     php artisan redis:cache flush                 # Flush entire Redis cache
@@ -96,7 +194,7 @@ Add the following to your composer.json:
     php artisan redis:cache tag {tag-name}        # Remove all cache entries with a specific tag
     ```
 
-11. NovaBaseModel with Caching:
+13. NovaBaseModel with Caching:
     ```php
     use DrBalcony\NovaCommon\Models\NovaBaseModel;
     
