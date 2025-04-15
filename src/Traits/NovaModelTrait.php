@@ -200,7 +200,7 @@ trait NovaModelTrait
             return $query->paginate($perPage, ['*'], 'page', $page);
         }
 
-        $cacheKey = $this->getCacheKey("pagination:{$page}:{$perPage}:".$query->toSql());
+        $cacheKey = $this->getCacheKey("pagination:{$page}:{$perPage}:".$query->toRawSql());
 
         return Cache::tags($this->getCacheTags())
             ->remember(
