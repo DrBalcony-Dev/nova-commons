@@ -4,7 +4,6 @@ namespace DrBalcony\NovaCommon\Providers;
 
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
-use DrBalcony\NovaCommon\Commands\RabbitMQ\ConsumeCommand;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
 use DrBalcony\NovaCommon\Commands\RedisCacheCommand;
 use DrBalcony\NovaCommon\Services\PermissionService;
@@ -13,15 +12,16 @@ use DrBalcony\NovaCommon\Services\PhoneNumberService;
 use DrBalcony\NovaCommon\Middleware\UserAuthMiddleware;
 use DrBalcony\NovaCommon\Services\AuthenticationService;
 use DrBalcony\NovaCommon\Middleware\ClientAuthMiddleware;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\ConsumeCommand;
 use DrBalcony\NovaCommon\Services\RabbitMQ\ConsumerClient;
 use DrBalcony\NovaCommon\Services\RabbitMQ\PublisherClient;
 use DrBalcony\NovaCommon\Commands\RabbitMQ\ConsumeTestCommand;
 use DrBalcony\NovaCommon\Middleware\CheckPermissionMiddleware;
-use App\Console\Commands\RabbitMQ\TestConsumerConnectionCommand;
 use DrBalcony\NovaCommon\Commands\RabbitMQ\PublishRabbitMQMessage;
 use DrBalcony\NovaCommon\Commands\RabbitMQ\TestRabbitMQConnection;
 use DrBalcony\NovaCommon\Commands\RabbitMQ\RabbitMQListenerCommand;
 use DrBalcony\NovaCommon\Commands\RabbitMQ\PublishTestMessageCommand;
+use DrBalcony\NovaCommon\Commands\RabbitMQ\TestConsumerConnectionCommand;
 
 class NovaCommonServiceProvider extends ServiceProvider
 {
