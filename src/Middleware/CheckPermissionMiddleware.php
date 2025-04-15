@@ -70,10 +70,11 @@ class CheckPermissionMiddleware
     }
 
     /**
-     * This can be extended to filter out noisy permissions
+     * This can be overridden to filter out noisy permissions
      */
     private function shouldLogPermissionDenial(string $permission): bool
     {
-        return confirm('should_log_invalid_request');
+        return true; // TODO Temporarily for testing.
+        // return confirm('should_log_invalid_request');
     }
 }
