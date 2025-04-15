@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Console\Commands\RabbitMQ;
+namespace DrBalcony\NovaCommon\Commands\RabbitMQ;
 
-use App\Services\RabbitMQ\ConsumerClient;
+use DrBalcony\NovaCommon\Services\RabbitMQ\ConsumerClient;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
