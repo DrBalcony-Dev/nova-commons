@@ -1,4 +1,6 @@
 <?php
+
+use DrBalcony\NovaCommon\Jobs\SampleConsumerJob;
 return [
     'rabbitmq' => [
         'host' => env('RABBITMQ_HOST', '127.0.0.1'),
@@ -10,6 +12,15 @@ return [
             'log' => env('RABBITMQ_QUEUE_LOG', 'log'),
             'exception' => env('RABBITMQ_QUEUE_EXCEPTION', 'exception'),
         ],
+
+        /**
+         * Consume RabbitMQ configurations
+         *
+         */
+        'consume' => [
+            // Extend the abstract ConsumerJob class and put the full class name here.
+            'job' => SampleConsumerJob::class, 
+        ]
     ],
 
     'earth'=>[
