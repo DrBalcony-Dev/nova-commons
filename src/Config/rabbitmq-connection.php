@@ -104,18 +104,11 @@ return [
     'write_timeout' => (float) env('RABBITMQ_WRITE_TIMEOUT', 3.0),
 
     /*
-     * Whether to enable keepalive.
-     * If enabled, the connection will send a heartbeat to the server periodically.
-     * Default: false
-     */
-    'keepalive' => (bool) env('RABBITMQ_KEEPALIVE', false),
-
-    /*
      * The number of seconds between heartbeats.
      * If set to 0, heartbeats will be disabled.
      * Default: 0
      */
-    'heartbeat' => (int) env('RABBITMQ_HEARTBEAT', 0),
+    'heartbeat' => (int) env('RABBITMQ_HEARTBEAT', 60),
 
     /*
      * The maximum time to wait for an RPC response from the server.
