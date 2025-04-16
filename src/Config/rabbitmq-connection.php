@@ -16,9 +16,9 @@ return [
 
     /*
      * The hostname or IP address of the RabbitMQ server to connect to.
-     * Default: 'localhost'
+     * Default: '127.0.0.1'
      */
-    'host' => env('RABBITMQ_HOST', 'localhost'),
+    'host' => env('RABBITMQ_HOST', '127.0.0.1'),
 
     /*
      * The port number to connect to on the RabbitMQ server.
