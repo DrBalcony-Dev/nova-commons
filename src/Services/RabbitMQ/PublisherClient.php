@@ -192,8 +192,13 @@ class PublisherClient
             }
 
             // SSL Verify Options
-            $config->setSslVerify(config('rabbitmq-connection.ssl_options.verify_peer', false));
-            $config->setSslVerifyName(config('rabbitmq-connection.ssl_options.verify_peer_name', false));
+            if (! config('rabbitmq-connection.ssl_options.verify_peer', false)) {
+                $config->setSslVerify(false);
+                $config->setSslVerifyName(false);
+            } else {
+                $config->setSslVerify(config('rabbitmq-connection.ssl_options.verify_peer', false));
+                $config->setSslVerifyName(config('rabbitmq-connection.ssl_options.verify_peer_name', false));
+            }
 
             // SSL Passphrase
             if ($passphrase = config('rabbitmq-connection.ssl_options.passphrase')) {

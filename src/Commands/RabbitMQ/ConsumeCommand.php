@@ -11,6 +11,9 @@ use PhpAmqpLib\Message\AMQPMessage;
 use DrBalcony\NovaCommon\Jobs\ConsumerJob;
 use DrBalcony\NovaCommon\Services\RabbitMQ\ConsumerClient;
 
+/**
+ * @deprecated
+ */
 class ConsumeCommand extends Command
 {
     /**
