@@ -181,7 +181,6 @@ class ConsumerClient
         if ($this->channel === null || !$this->channel->is_open()) {
             $this->lastError = 'RabbitMQ channel is not open';
             Log::warning('RabbitMQ Processing Error: '.$this->lastError);
-
             return false;
         }
 
@@ -194,11 +193,10 @@ class ConsumerClient
             // Calculate end time if timeout is provided
             $endTime = $timeout > 0 ? time() + $timeout : 0;
 
-            // Use shorter wait intervals to avoid long blocking periods
-            $waitInterval = 1; // 1 second wait intervals
-
-            // Get heartbeat value for connection maintenance
+            // Get heartbeat value - use a shorter wait interval based on heartbeat
             $heartbeat = (int) config('rabbitmq-connection.heartbeat', 60);
+            // Wait for less time than the heartbeat interval requires
+            $waitInterval = $heartbeat > 0 ? min(1, $heartbeat / 4) : 1;
             $lastHeartbeatTime = time();
 
             // Process messages until we're told to stop or timeout occurs
@@ -213,25 +211,38 @@ class ConsumerClient
                     break;
                 }
 
+                // Always check and send heartbeat before processing messages
+                $currentTime = time();
+
+                // Check connection state periodically (e.g., every 15 seconds)
+                if ($currentTime % 15 == 0) {
+                    if (!$this->attemptRecovery()) {
+                        break; // Exit the loop if recovery failed
+                    }
+                }
+
+                if (
+                    $heartbeat > 0 &&
+                    ($currentTime - $lastHeartbeatTime) >= ($heartbeat / 4)
+                ) {
+                    if ($this->isHealthy()) {
+                        try {
+                            // Send heartbeat
+                            if ($this->sendHeartbeat()) {
+                                $lastHeartbeatTime = $currentTime;
+                            }
+                        } catch (Exception $hbException) {
+                            Log::warning('RabbitMQ heartbeat error: '.$hbException->getMessage());
+                        }
+                    }
+                }
+
                 // Process messages in short bursts
                 try {
                     $this->channel->wait(null, true, $waitInterval);
                 } catch (\PhpAmqpLib\Exception\AMQPTimeoutException $e) {
                     // This is normal - just means no messages arrived during wait interval
-                    // We can use this opportunity to perform connection maintenance
-
-                    // Send heartbeat if needed
-                    $currentTime = time();
-                    if ($heartbeat > 0 && ($currentTime - $lastHeartbeatTime) >= ($heartbeat / 2)) {
-                        if ($this->connection && $this->connection->isConnected()) {
-                            try {
-                                $this->connection->checkHeartBeat();
-                                $lastHeartbeatTime = $currentTime;
-                            } catch (Exception $hbException) {
-                                Log::warning('RabbitMQ heartbeat error: '.$hbException->getMessage());
-                            }
-                        }
-                    }
+                    // We don't need to do anything special here - heartbeat is already checked above
                 }
             }
 
@@ -357,8 +368,13 @@ class ConsumerClient
         $config->setConnectionTimeout((float) config('rabbitmq-connection.connection_timeout', 3.0));
         $config->setReadTimeout((float) config('rabbitmq-connection.read_timeout', 3.0));
         $config->setWriteTimeout((float) config('rabbitmq-connection.write_timeout', 3.0));
-        $config->setKeepalive((bool) config('rabbitmq-connection.keepalive', false));
-        $config->setHeartbeat((int) config('rabbitmq-connection.heartbeat', 60));
+
+        // Explicitly set to keep alive (because using heartbeats)
+        $config->setKeepalive(true);
+
+        // Set heartbeat
+        $heartbeat = (int) config('rabbitmq-connection.heartbeat');
+        $config->setHeartbeat($heartbeat);
         $config->setChannelRPCTimeout((float) config('rabbitmq-connection.channel_rpc_timeout', 0.0));
 
         // SSL configuration
@@ -476,5 +492,71 @@ class ConsumerClient
     private function shouldContinue(): bool
     {
         return $this->shouldContinueConsuming;
+    }
+
+    /**
+     * Attempt to recover the connection if it's dropped.
+     *
+     * @return bool True if recovery was successful or not needed, false otherwise
+     */
+    protected function attemptRecovery(): bool
+    {
+        if ($this->connection === null || !$this->connection->isConnected()) {
+            Log::warning('RabbitMQ connection lost, attempting recovery...');
+
+            // Close any existing connections to clean up resources
+            $this->close();
+
+            // Try to reconnect
+            if (!$this->initializeConnection()) {
+                Log::error('Failed to recover RabbitMQ connection');
+                return false;
+            }
+
+            Log::info('RabbitMQ connection recovered successfully');
+            return true;
+        }
+
+        return true; // Connection is already active
+    }
+
+    /**
+     * Sends a heartbeat to the RabbitMQ server.
+     *
+     * @return bool True if heartbeat was sent successfully, false otherwise
+     */
+    public function sendHeartbeat(): bool
+    {
+        if ($this->connection === null || !$this->connection->isConnected()) {
+            return false;
+        }
+
+        try {
+            $this->connection->checkHeartBeat();
+
+            return true;
+        } catch (Exception $e) {
+            Log::warning('Failed to send heartbeat: ' . $e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the connection is healthy.
+     *
+     * @return bool True if the connection is healthy, false otherwise
+     */
+    public function isHealthy(): bool
+    {
+        if ($this->connection === null || !$this->connection->isConnected()) {
+            return false;
+        }
+
+        if ($this->channel === null || !$this->channel->is_open()) {
+            return false;
+        }
+
+        return true;
     }
 }
