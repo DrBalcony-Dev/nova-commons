@@ -173,6 +173,10 @@ class ConsumeCommand extends Command
             'prefetch_count' => $prefetchCount,
         ];
 
+        // Set up a scheduled health check
+        $lastHealthCheckTime = time();
+        $healthCheckInterval = 30; // Check every 30 seconds
+
         // Start consuming
         try {
             $success = $this->consumer->consume($queue, $messageCallback, $consumeOptions);
@@ -191,6 +195,30 @@ class ConsumeCommand extends Command
 
             // Process messages until shouldContinue is false
             while ($this->shouldContinue) {
+                // Dedicated health check
+                $currentTime = time();
+                if ($currentTime - $lastHealthCheckTime >= $healthCheckInterval) {
+                    if (!$consumer->isHealthy()) {
+                        $this->warn('Detected unhealthy RabbitMQ connection. Attempting recovery...');
+
+                        // Try to close and reconnect
+                        $consumer->close();
+
+                        // Wait a moment before reconnecting
+                        sleep(1);
+
+                        // Try to reconnect and consume again
+                        if (!$consumer->consume($queue, $messageCallback, $consumeOptions)) {
+                            $this->error('Failed to recover connection. Will retry in 10 seconds.');
+                            sleep(10);
+                        } else {
+                            $this->info('Successfully recovered RabbitMQ connection.');
+                        }
+                    }
+
+                    $lastHealthCheckTime = $currentTime;
+                }
+
                 $this->consumer->processMessages($sleep);
 
                 // Check if we should stop
