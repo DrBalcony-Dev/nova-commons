@@ -14,6 +14,8 @@ use PhpAmqpLib\Message\AMQPMessage;
  *
  * This class provides a simple interface for consuming messages from a RabbitMQ queue.
  * It handles creating and managing the connection to the RabbitMQ server.
+ *
+ * @deprecated if you want to consume anything you should use queue
  */
 class ConsumerClient
 {

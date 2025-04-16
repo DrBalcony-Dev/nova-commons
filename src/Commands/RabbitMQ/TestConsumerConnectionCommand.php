@@ -8,6 +8,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use PhpAmqpLib\Message\AMQPMessage;
 
+/**
+ * @deprecated
+ */
 class TestConsumerConnectionCommand extends Command
 {
     /**
