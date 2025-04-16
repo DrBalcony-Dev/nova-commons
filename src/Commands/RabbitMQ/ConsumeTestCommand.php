@@ -7,6 +7,9 @@ use Illuminate\Console\Command;
 use PhpAmqpLib\Message\AMQPMessage;
 use DrBalcony\NovaCommon\Facades\Consumer;
 
+/**
+ * @deprecated
+ */
 class ConsumeTestCommand extends Command
 {
     /**

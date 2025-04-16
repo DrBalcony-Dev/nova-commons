@@ -2,16 +2,13 @@
 
 namespace DrBalcony\NovaCommon\Jobs;
 
-/**
- * Sample concrete implementation of the ConsumerJob abstract class.
- *
- * @deprecated
- */
-class SampleConsumerJob extends ConsumerJob
+use DrBalcony\NovaCommon\Jobs\RabbitMQConsumerJob as BaseJob;
+
+class SampleRabbitMQJob extends BaseJob
 {
     /**
-     * @inheritDoc
-     * 
+     * Get the consumers mapped from their queue names to their listener classes.
+     *
      * <code>
      * // Implement sth like this:
      * protected function consumers(): array
@@ -23,11 +20,11 @@ class SampleConsumerJob extends ConsumerJob
      *     ];
      * }
      * </code>
-     * 
-     * @return array<string, string>
+     *
+     * @return array<string, string<class-string>>
      */
-    public function consumers(): array
+    protected function mappedConsumers(): array
     {
-        return []; // TODO: Implement.
+        return []; // TODO implement
     }
 }
