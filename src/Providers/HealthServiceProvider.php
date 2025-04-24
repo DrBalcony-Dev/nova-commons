@@ -55,11 +55,6 @@ class HealthServiceProvider extends ServiceProvider
         if (!empty($checks)) {
             Health::checks($checks);
         }
-
-        // Log configuration for debugging
-        if (app()->environment('local', 'development', 'testing')) {
-            $this->logHealthConfiguration();
-        }
     }
 
     /**
@@ -186,21 +181,5 @@ class HealthServiceProvider extends ServiceProvider
         }
 
         return $checks;
-    }
-
-    /**
-     * Log health configuration for debugging
-     *
-     * @return void
-     */
-    protected function logHealthConfiguration(): void
-    {
-        Log::debug('Health check configuration', [
-            'notifications_enabled' => config('health.notifications.enabled'),
-            'webhook_url' => config('health.notifications.slack.webhook_url') ? 'Set' : 'Not set',
-            'slack_channel' => config('health.notifications.slack.channel'),
-            'channels' => config('health.notifications.notifications'),
-            'throttle_minutes' => config('health.notifications.throttle_notifications_for_minutes'),
-        ]);
     }
 }
