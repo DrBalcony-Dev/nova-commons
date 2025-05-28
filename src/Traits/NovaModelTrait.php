@@ -16,14 +16,14 @@ use RuntimeException;
 trait NovaModelTrait
 {
     /**
-     * Cache TTL in seconds (24 hours by default)
+     * Cache TTL in seconds (1 hour by default)
      */
-    protected int $cacheTTL = 86400;
+    protected int $cacheTTL = 3600;
 
     /**
      * Enable model caching
      */
-    protected bool $enableCache = true;
+    protected bool $enableCache = false;
 
     /**
      * Cache tags for the model
