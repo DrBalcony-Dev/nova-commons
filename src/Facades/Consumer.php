@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static string|null getLastError()
  *
  * @see \DrBalcony\NovaCommon\Services\RabbitMQ\ConsumerClient
- *
- * @deprecated
  */
 class Consumer extends Facade
 {
