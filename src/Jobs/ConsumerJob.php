@@ -15,8 +15,6 @@ use Illuminate\Contracts\Container\BindingResolutionException;
  * This allows us to use it with our ConsumerClient.
  * 
  * You should extend this class and implement the `consumers` method.
- *
- * @deprecated
  */
 abstract class ConsumerJob
 {

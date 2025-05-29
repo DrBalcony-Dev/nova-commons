@@ -4,8 +4,6 @@ namespace DrBalcony\NovaCommon\Jobs;
 
 /**
  * Sample concrete implementation of the ConsumerJob abstract class.
- *
- * @deprecated
  */
 class SampleConsumerJob extends ConsumerJob
 {
