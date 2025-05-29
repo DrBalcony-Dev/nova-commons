@@ -7,9 +7,6 @@ use Illuminate\Console\Command;
 use PhpAmqpLib\Message\AMQPMessage;
 use DrBalcony\NovaCommon\Facades\Consumer;
 
-/**
- * @deprecated
- */
 class ConsumeTestCommand extends Command
 {
     /**
@@ -87,8 +84,8 @@ class ConsumeTestCommand extends Command
             $this->line('Signal handling enabled (SIGINT, SIGTERM)');
 
             // Register signal handlers
-            pcntl_signal(SIGINT, [$this, 'handleSignal']);
-            pcntl_signal(SIGTERM, [$this, 'handleSignal']);
+            pcntl_signal(SIGINT, [$this, 'novaCustomHandleSignal']);
+            pcntl_signal(SIGTERM, [$this, 'novaCustomHandleSignal']);
         } else {
             $this->warn('Signal handling not available (pcntl extension not loaded)');
         }
@@ -223,7 +220,7 @@ class ConsumeTestCommand extends Command
      * @param int $signo The signal number
      * @return void
      */
-    public function handleSignal(int $signo): void
+    public function novaCustomHandleSignal(int $signo): void
     {
         $this->newLine();
         $this->info("Received signal {$signo}, shutting down gracefully...");
