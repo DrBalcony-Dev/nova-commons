@@ -1,5 +1,9 @@
 <?php
-
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use DrBalcony\NovaCommon\Jobs\SampleConsumerJob;
 return [
     'rabbitmq' => [
@@ -35,7 +39,7 @@ return [
     ],
 
     'permission' => [
-        'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/api/permissions/verify'),
+        'verify_endpoint' => env('PERMISSION_VERIFY_ENDPOINT', 'https://nova.drbalcony.dev/earth/api/permissions/verify'),
         'should_log_invalid_request' => env("SHOULD_LOG_INVALID_REQUEST", true),
     ],
 
@@ -43,6 +47,14 @@ return [
         // Exceptions that shouldn't be reported
         'dont_report' => [
             \Illuminate\Validation\ValidationException::class,
+            NotFoundHttpException::class,
+            MethodNotAllowedHttpException::class,
+            ThrottleRequestsException::class,
+            NotFoundHttpException::class,
+            ThrottleRequestsException::class,
+            AuthorizationException::class,
+            AuthenticationException::class,
+
         ],
 
         // RabbitMQ reporting configuration
