@@ -2,6 +2,7 @@
 
 namespace DrBalcony\NovaCommon\Providers;
 
+use DrBalcony\NovaCommon\Services\Hubble\HubblePublisher;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use DrBalcony\NovaCommon\Services\RabbitMQLogger;
@@ -89,6 +90,10 @@ class NovaCommonServiceProvider extends ServiceProvider
             __DIR__ . '/../Config/rabbitmq-connection.php' => config_path('rabbitmq-connection.php'),
         ], 'rabbitmq');
 
+        $this->publishes([
+            __DIR__ . '/../Config/hubble-publisher.php' => config_path('hubble-publisher.php'),
+        ], 'hubble');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 // RabbitMQ commands
@@ -129,6 +134,10 @@ class NovaCommonServiceProvider extends ServiceProvider
 
         $this->app->singleton('app.rabbitmq.publisher', function ($app) {
             return new PublisherClient();
+        });
+
+        $this->app->singleton('app.hubble.publisher', function ($app) {
+            return new HubblePublisher(app()->make(RabbitMQPublisher::class));
         });
     }
 
