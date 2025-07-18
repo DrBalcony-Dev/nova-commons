@@ -278,3 +278,54 @@ Add the following to your composer.json:
     
     echo $model->uuid; // Automatically generated UUID
     ```
+
+## 🌌 HubbleEventPublisher
+
+The `HubbleEventPublisher` allows your application to publish structured user-related events to  **Hubble**.
+
+### 1. Publish the Configuration File
+
+Run the following Artisan command to publish the config file:
+
+```bash
+php artisan vendor:publish --tag=hubble
+````
+
+This will create a new config file at:
+
+```
+config/hubble-publisher.php
+```
+
+---
+
+### 2. Configure the Source Name
+
+Inside the `hubble-publisher.php` config file, set your service source name:
+
+```php
+return [
+    'source' => env('HUBBLE_PUBLISHER_SOURCE', 'earth'), // e.g. 'earth', 'pulse', 'orbit', etc.
+];
+```
+
+You may also define it in your `.env` file:
+
+```env
+HUBBLE_PUBLISHER_SOURCE=orbit
+```
+
+---
+
+### 3. Use the Facade to Publish Events
+
+The `HubblePublisher` facade provides convenient methods to publish event data. For example, to publish a complete user payload:
+
+```php
+use DrBalcony\NovaCommon\Facades\HubblePublisher;
+$userUuid = '18c5edad-6417-4a81-ab61-ec1b57b9c875'
+HubblePublisher::publishFullUser($userUuid);
+```
+
+> 🔔 More publishing methods will be added as needed. Refer to the facade implementation for available methods.
+
