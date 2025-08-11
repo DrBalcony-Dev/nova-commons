@@ -145,7 +145,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
 
             $e instanceof MethodNotAllowedHttpException => Response::methodNotAllowed(),
 
-            $e instanceof ThrottleRequestsException => Response::toManyAttempts(),
+            $e instanceof ThrottleRequestsException => Response::tooManyAttempts(),
 
             default => Response::error(
                 message: $this->getErrorMessage($e),
