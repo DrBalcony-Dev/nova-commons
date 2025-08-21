@@ -94,6 +94,10 @@ class NovaCommonServiceProvider extends ServiceProvider
             __DIR__ . '/../Config/hubble-publisher.php' => config_path('hubble-publisher.php'),
         ], 'hubble');
 
+        $this->publishes([
+            __DIR__ . '/../Config/notification.php' => config_path('notification.php'),
+        ], 'notification');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 // RabbitMQ commands
