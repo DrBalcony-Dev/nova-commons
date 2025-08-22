@@ -75,4 +75,7 @@ return [
      * Health check configuration
      */
     'health' => require __DIR__ . '/health-check.php',
+
+    'default_account_uuid' => env('DEFAULT_ACCOUNT_UUID', ''),
+
 ];
