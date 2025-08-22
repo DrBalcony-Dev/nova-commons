@@ -3,31 +3,31 @@
 
 declare(strict_types=1);
 
-namespace DrBalcony\NovaCommon\Services\Notification\Strategies;
+namespace DrBalcony\NovaCommon\Services\Message\Strategies;
 
-use DrBalcony\NovaCommon\DTO\NotificationMetadataDTO;
-use DrBalcony\NovaCommon\DTO\NotificationRequestDTO;
+use DrBalcony\NovaCommon\DTO\MessageMetadataDTO;
+use DrBalcony\NovaCommon\DTO\MessageRequestDTO;
 use DrBalcony\NovaCommon\Enums\Priority;
-use DrBalcony\NovaCommon\Exceptions\NotificationValidationException;
-use DrBalcony\NovaCommon\Services\Notification\Contracts\NotificationDeliveryStrategyInterface;
-use DrBalcony\NovaCommon\Services\Notification\Generators\NotificationPayloadGenerator;
+use DrBalcony\NovaCommon\Exceptions\MessageValidationException;
+use DrBalcony\NovaCommon\Services\Message\Contracts\MessageDeliveryStrategyInterface;
+use DrBalcony\NovaCommon\Services\Message\Generators\MessagePayloadGenerator;
 use DrBalcony\NovaCommon\Traits\RabbitMQPublisher;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Email notification delivery strategy
+ * Email message delivery strategy
  *
- * Handles email notification delivery via RabbitMQ queue system.
+ * Handles email message delivery via RabbitMQ queue system.
  */
-final class EmailNotificationStrategy implements NotificationDeliveryStrategyInterface
+final class EmailMessageStrategy implements MessageDeliveryStrategyInterface
 {
     use RabbitMQPublisher;
 
     private const string EMAIL_QUEUE_NAME = 'pulse_email_events';
     private const string SENDER_NAME = 'DrBalcony';
-    private const string DEFAULT_EMAIL_SUBJECT = 'DrBalcony Notification';
+    private const string DEFAULT_EMAIL_SUBJECT = 'DrBalcony message';
 
     private LoggerInterface $logger;
 
@@ -37,17 +37,17 @@ final class EmailNotificationStrategy implements NotificationDeliveryStrategyInt
     }
 
     /**
-     * Send an email notification using either template or content approach
+     * Send an email message using either template or content approach
      *
-     * @param NotificationRequestDTO $requestDTO The notification request data
+     * @param MessageRequestDTO $requestDTO The message request data
      * @return bool Success status of the delivery attempt
      *
-     * @throws NotificationValidationException If email address is invalid
+     * @throws MessageValidationException If email address is invalid
      * @throws Exception If RabbitMQ publishing fails
      */
-    public function send(NotificationRequestDTO $requestDTO): bool
+    public function send(MessageRequestDTO $requestDTO): bool
     {
-        $this->logger->info('Attempting to send email notification', [
+        $this->logger->info('Attempting to send email message', [
             'recipient' => $requestDTO->recipient,
             'account_uuid' => $requestDTO->getAccountUuid(),
             'is_template_based' => $requestDTO->isTemplateBased(),
@@ -56,13 +56,13 @@ final class EmailNotificationStrategy implements NotificationDeliveryStrategyInt
 
         try {
             // Generate payload with email-specific metadata
-            $emailMetadata = new NotificationMetadataDTO(
+            $emailMetadata = new MessageMetadataDTO(
                 data: [],
                 senderName: self::SENDER_NAME,
                 subject: self::DEFAULT_EMAIL_SUBJECT,
             );
 
-            $payload = NotificationPayloadGenerator::generate($requestDTO, $emailMetadata);
+            $payload = MessagePayloadGenerator::generate($requestDTO, $emailMetadata);
 
             // Validate email address
             $this->validateEmailAddress($payload->recipient);
@@ -76,14 +76,14 @@ final class EmailNotificationStrategy implements NotificationDeliveryStrategyInt
                 ]
             );
 
-            $this->logger->info('Email notification sent successfully', [
+            $this->logger->info('Email message sent successfully', [
                 'recipient' => $payload->recipient,
                 'account_id' => $payload->accountId,
                 'queue' => self::EMAIL_QUEUE_NAME,
             ]);
 
             return true;
-        } catch (NotificationValidationException $e) {
+        } catch (MessageValidationException $e) {
             $this->logger->error('Email validation failed', [
                 'recipient' => $requestDTO->recipient,
                 'account_uuid' => $requestDTO->getAccountUuid(),
@@ -91,7 +91,7 @@ final class EmailNotificationStrategy implements NotificationDeliveryStrategyInt
             ]);
             throw $e;
         } catch (Exception $e) {
-            $this->logger->error('Failed to send email notification', [
+            $this->logger->error('Failed to send email message', [
                 'recipient' => $requestDTO->recipient,
                 'account_uuid' => $requestDTO->getAccountUuid(),
                 'error' => $e->getMessage(),
@@ -107,12 +107,12 @@ final class EmailNotificationStrategy implements NotificationDeliveryStrategyInt
      * @param string $email The email address to validate
      * @return void
      *
-     * @throws NotificationValidationException If email format is invalid
+     * @throws MessageValidationException If email format is invalid
      */
     private function validateEmailAddress(string $email): void
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new NotificationValidationException(
+            throw new MessageValidationException(
                 'email',
                 $email,
                 'Email address must be in valid format'

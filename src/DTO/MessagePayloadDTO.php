@@ -5,25 +5,25 @@ declare(strict_types=1);
 namespace DrBalcony\NovaCommon\DTO;
 
 /**
- * Data Transfer Object for notification payload
+ * Data Transfer Object for message payload
  */
-final readonly class NotificationPayloadDTO
+final readonly class MessagePayloadDTO
 {
     /**
      * @param string $accountId Account identifier (UUID)
      * @param string $recipient Recipient identifier (email/phone)
-     * @param NotificationMetadataDTO $metadata Notification metadata
+     * @param MessageMetadataDTO $metadata message metadata
      * @param string|null $content Direct content (used when template is null)
      * @param string|null $template Template slug
      * @param array<string, mixed> $placeholders Template placeholders
      */
     public function __construct(
-        public string $accountId,
-        public string $recipient,
-        public NotificationMetadataDTO $metadata,
-        public ?string $content = null,
-        public ?string $template = null,
-        public array $placeholders = [],
+        public string             $accountId,
+        public string             $recipient,
+        public MessageMetadataDTO $metadata,
+        public ?string            $content = null,
+        public ?string            $template = null,
+        public array              $placeholders = [],
     ) {}
 
     /**
@@ -38,8 +38,8 @@ final readonly class NotificationPayloadDTO
             accountId: (string) $data['account_id'],
             recipient: (string) $data['to'],
             metadata: isset($data['metadata'])
-                ? NotificationMetadataDTO::fromArray($data['metadata'])
-                : new NotificationMetadataDTO(),
+                ? MessageMetadataDTO::fromArray($data['metadata'])
+                : new MessageMetadataDTO(),
             content: $data['content'] ?? null,
             template: $data['template'] ?? null,
             placeholders: $data['placeholders'] ?? [],
@@ -73,7 +73,7 @@ final readonly class NotificationPayloadDTO
     }
 
     /**
-     * Check if this is a template-based notification
+     * Check if this is a template-based message
      *
      * @return bool
      */

@@ -2,41 +2,42 @@
 
 declare(strict_types=1);
 
-namespace DrBalcony\NovaCommon\Services\Notification\Generators;
+namespace DrBalcony\NovaCommon\Services\Message\Generators;
 
-use DrBalcony\NovaCommon\DTO\NotificationMetadataDTO;
-use DrBalcony\NovaCommon\DTO\NotificationPayloadDTO;
-use DrBalcony\NovaCommon\DTO\NotificationRequestDTO;
+use DrBalcony\NovaCommon\DTO\MessageMetadataDTO;
+use DrBalcony\NovaCommon\DTO\MessagePayloadDTO;
+use DrBalcony\NovaCommon\DTO\MessageRequestDTO;
+use DrBalcony\NovaCommon\Exceptions\InvalidMessageIdentifierException;
 
 /**
- * Generator for notification payloads
+ * Generator for message payloads
  *
- * This class handles the creation of notification payloads from request DTOs
+ * This class handles the creation of message payloads from request DTOs
  * with clean separation of recipient and account UUID parameters.
  */
-final class NotificationPayloadGenerator
+final class MessagePayloadGenerator
 {
     private const string DEFAULT_CATEGORY = 'system-alert';
 
     /**
-     * Generate notification payload from request DTO
+     * Generate message payload from request DTO
      *
-     * @param NotificationRequestDTO $requestDTO The notification request
-     * @param NotificationMetadataDTO|null $defaultMetadata Default metadata to merge
-     * @return NotificationPayloadDTO The generated payload
+     * @param MessageRequestDTO $requestDTO The message request
+     * @param MessageMetadataDTO|null $defaultMetadata Default metadata to merge
+     * @return MessagePayloadDTO The generated payload
      */
     public static function generate(
-        NotificationRequestDTO $requestDTO,
-        ?NotificationMetadataDTO $defaultMetadata = null
-    ): NotificationPayloadDTO {
+        MessageRequestDTO   $requestDTO,
+        ?MessageMetadataDTO $defaultMetadata = null
+    ): MessagePayloadDTO {
         // Merge metadata if default is provided
         $metadata = $defaultMetadata !== null
             ? $defaultMetadata->merge($requestDTO->metadata)
             : $requestDTO->metadata;
 
-        // Ensure category is set for content-based notifications
+        // Ensure category is set for content-based messages
         if (!$requestDTO->isTemplateBased() && $metadata->category === null) {
-            $metadata = new NotificationMetadataDTO(
+            $metadata = new MessageMetadataDTO(
                 data: $metadata->data,
                 category: self::DEFAULT_CATEGORY,
                 senderName: $metadata->senderName,
@@ -44,7 +45,7 @@ final class NotificationPayloadGenerator
             );
         }
 
-        return new NotificationPayloadDTO(
+        return new MessagePayloadDTO(
             accountId: $requestDTO->getAccountUuid(),
             recipient: $requestDTO->recipient,
             metadata: $metadata,
@@ -59,11 +60,11 @@ final class NotificationPayloadGenerator
      *
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, will use config default)
-     * @param string $content Content for notification
+     * @param string $content Content for message
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param array<string, mixed> $metadata Additional metadata
-     * @return NotificationRequestDTO
+     * @return MessageRequestDTO
      */
     public static function createRequest(
         string $recipient,
@@ -72,14 +73,14 @@ final class NotificationPayloadGenerator
         ?string $templateSlug = null,
         array $placeholders = [],
         array $metadata = []
-    ): NotificationRequestDTO {
-        return new NotificationRequestDTO(
+    ): MessageRequestDTO {
+        return new MessageRequestDTO(
             recipient: $recipient,
             accountUuid: $accountUuid,
             content: $content,
             templateSlug: $templateSlug,
             placeholders: $placeholders,
-            metadata: NotificationMetadataDTO::fromArray($metadata),
+            metadata: MessageMetadataDTO::fromArray($metadata),
         );
     }
 
@@ -87,13 +88,13 @@ final class NotificationPayloadGenerator
      * Create request DTO from legacy identifier format for backward compatibility
      *
      * @param string $identifier Recipient and account UUID separated by underscore
-     * @param string $content Content for notification
+     * @param string $content Content for message
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param array<string, mixed> $metadata Additional metadata
-     * @return NotificationRequestDTO
+     * @return MessageRequestDTO
      *
-     * @throws InvalidNotificationIdentifierException If identifier format is invalid
+     * @throws InvalidMessageIdentifierException If identifier format is invalid
      */
     public static function createFromLegacyIdentifier(
         string $identifier,
@@ -101,16 +102,16 @@ final class NotificationPayloadGenerator
         ?string $templateSlug = null,
         array $placeholders = [],
         array $metadata = []
-    ): NotificationRequestDTO {
+    ): MessageRequestDTO {
         $parsed = self::parseIdentifier($identifier);
 
-        return new NotificationRequestDTO(
+        return new MessageRequestDTO(
             recipient: $parsed['recipient'],
             accountUuid: $parsed['accountUuid'],
             content: $content,
             templateSlug: $templateSlug,
             placeholders: $placeholders,
-            metadata: NotificationMetadataDTO::fromArray($metadata),
+            metadata: MessageMetadataDTO::fromArray($metadata),
         );
     }
 
@@ -120,7 +121,7 @@ final class NotificationPayloadGenerator
      * @param string $identifier Recipient and account UUID separated by underscore
      * @return array{recipient: string, accountUuid: string} Parsed components
      *
-     * @throws InvalidNotificationIdentifierException If identifier format is invalid
+     * @throws InvalidMessageIdentifierException If identifier format is invalid
      */
     public static function parseIdentifier(string $identifier): array
     {
@@ -128,7 +129,7 @@ final class NotificationPayloadGenerator
         $lastUnderscorePos = strrpos($identifier, '_');
 
         if ($lastUnderscorePos === false) {
-            throw new InvalidNotificationIdentifierException($identifier);
+            throw new InvalidMessageIdentifierException($identifier);
         }
 
         // Extract recipient (everything before the last underscore)
@@ -138,7 +139,7 @@ final class NotificationPayloadGenerator
         $accountUuid = substr($identifier, $lastUnderscorePos + 1);
 
         if (empty($recipient) || empty($accountUuid)) {
-            throw new InvalidNotificationIdentifierException(
+            throw new InvalidMessageIdentifierException(
                 $identifier,
                 'recipient_accountUuid (both parts must be non-empty)'
             );

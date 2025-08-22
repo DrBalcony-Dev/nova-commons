@@ -6,25 +6,25 @@ namespace DrBalcony\NovaCommon\DTO;
 
 
 /**
- * Data Transfer Object for notification request
+ * Data Transfer Object for message request
  */
-final readonly class NotificationRequestDTO
+final readonly class MessageRequestDTO
 {
     /**
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, will be retrieved from config)
-     * @param string $content Content for the notification (used when templateSlug is null)
+     * @param string $content Content for the message (used when templateSlug is null)
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
-     * @param NotificationMetadataDTO $metadata Additional metadata
+     * @param MessageMetadataDTO $metadata Additional metadata
      */
     public function __construct(
-        public string $recipient,
-        public ?string $accountUuid = null,
-        public string $content = '',
-        public ?string $templateSlug = null,
-        public array $placeholders = [],
-        public NotificationMetadataDTO $metadata = new NotificationMetadataDTO(),
+        public string             $recipient,
+        public ?string            $accountUuid = null,
+        public string             $content = '',
+        public ?string            $templateSlug = null,
+        public array              $placeholders = [],
+        public MessageMetadataDTO $metadata = new MessageMetadataDTO(),
     ) {}
 
     /**
@@ -42,8 +42,8 @@ final readonly class NotificationRequestDTO
             templateSlug: $data['template_slug'] ?? null,
             placeholders: $data['placeholders'] ?? [],
             metadata: isset($data['metadata'])
-                ? NotificationMetadataDTO::fromArray($data['metadata'])
-                : new NotificationMetadataDTO(),
+                ? MessageMetadataDTO::fromArray($data['metadata'])
+                : new MessageMetadataDTO(),
         );
     }
 

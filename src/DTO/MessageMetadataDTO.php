@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace DrBalcony\NovaCommon\DTO;
 
 /**
- * Data Transfer Object for notification metadata
+ * Data Transfer Object for message metadata
  */
-final readonly class NotificationMetadataDTO
+final readonly class MessageMetadataDTO
 {
     /**
      * @param array<string, mixed> $data Additional metadata
-     * @param string|null $category Notification category
+     * @param string|null $category message category
      * @param string|null $senderName Sender name override
-     * @param string|null $subject Subject for email notifications
+     * @param string|null $subject Subject for email messages
      */
     public function __construct(
         public array $data = [],
@@ -65,10 +65,10 @@ final readonly class NotificationMetadataDTO
     /**
      * Merge with another metadata DTO
      *
-     * @param NotificationMetadataDTO $other
+     * @param MessageMetadataDTO $other
      * @return self
      */
-    public function merge(NotificationMetadataDTO $other): self
+    public function merge(MessageMetadataDTO $other): self
     {
         return new self(
             data: array_merge($this->data, $other->data),

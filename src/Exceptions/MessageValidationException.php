@@ -5,9 +5,9 @@ namespace DrBalcony\NovaCommon\Exceptions;
 use InvalidArgumentException;
 
 /**
- * Exception thrown when notification validation fails
+ * Exception thrown when message validation fails
  */
-final class NotificationValidationException extends InvalidArgumentException
+final class MessageValidationException extends InvalidArgumentException
 {
     public function __construct(string $field, string $value, string $reason = '')
     {

@@ -2,49 +2,49 @@
 
 declare(strict_types=1);
 
-namespace DrBalcony\NovaCommon\Services\Notification;
+namespace DrBalcony\NovaCommon\Services\Message;
 
-use DrBalcony\NovaCommon\DTO\NotificationMetadataDTO;
-use DrBalcony\NovaCommon\DTO\NotificationRequestDTO;
-use DrBalcony\NovaCommon\Enums\NotificationChannelEnum;
-use DrBalcony\NovaCommon\Exceptions\InvalidNotificationIdentifierException;
-use DrBalcony\NovaCommon\Exceptions\UnsupportedNotificationMethodException;
-use DrBalcony\NovaCommon\Services\Notification\Factories\NotificationDeliveryFactory;
-use DrBalcony\NovaCommon\Services\Notification\Generators\NotificationPayloadGenerator;
+use DrBalcony\NovaCommon\DTO\MessageMetadataDTO;
+use DrBalcony\NovaCommon\DTO\MessageRequestDTO;
+use DrBalcony\NovaCommon\Enums\MessageChannelEnum;
+use DrBalcony\NovaCommon\Exceptions\InvalidMessageIdentifierException;
+use DrBalcony\NovaCommon\Exceptions\UnsupportedMessageMethodException;
+use DrBalcony\NovaCommon\Services\Message\Factories\MessageDeliveryFactory;
+use DrBalcony\NovaCommon\Services\Message\Generators\MessagePayloadGenerator;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Main notification service orchestrator
+ * Main message service orchestrator
  *
- * This service provides a high-level interface for sending notifications
+ * This service provides a high-level interface for sending messages
  * across different channels (email, SMS, call) using the strategy pattern.
  */
-final class NotificationService
+final class MessageService
 {
     private LoggerInterface $logger;
-    private NotificationDeliveryFactory $deliveryFactory;
+    private MessageDeliveryFactory $deliveryFactory;
 
     public function __construct(
-        ?NotificationDeliveryFactory $deliveryFactory = null,
-        ?LoggerInterface $logger = null
+        ?MessageDeliveryFactory $deliveryFactory = null,
+        ?LoggerInterface        $logger = null
     ) {
         $this->logger = $logger ?? new NullLogger();
-        $this->deliveryFactory = $deliveryFactory ?? new NotificationDeliveryFactory($this->logger);
+        $this->deliveryFactory = $deliveryFactory ?? new MessageDeliveryFactory($this->logger);
     }
 
     /**
-     * Send a notification via the specified channel
+     * Send a message via the specified channel
      *
-     * @param NotificationChannelEnum $channel The notification channel
-     * @param NotificationRequestDTO $requestDTO The notification request
+     * @param MessageChannelEnum $channel The message channel
+     * @param MessageRequestDTO $requestDTO The message request
      * @return bool Success status of the delivery attempt
      *
-     * @throws UnsupportedNotificationMethodException If the channel is not supported
+     * @throws UnsupportedMessageMethodException If the channel is not supported
      * @throws Exception If the delivery fails
      */
-    public function send(NotificationChannelEnum $channel, NotificationRequestDTO $requestDTO): bool
+    public function send(MessageChannelEnum $channel, MessageRequestDTO $requestDTO): bool
     {
         $this->logger->info('Processing notification request', [
             'channel' => $channel->value,
@@ -81,37 +81,37 @@ final class NotificationService
     /**
      * Send an email notification
      *
-     * @param NotificationRequestDTO $requestDTO The notification request
+     * @param MessageRequestDTO $requestDTO The notification request
      * @return bool Success status of the delivery attempt
      * @throws Exception
      */
-    public function sendEmail(NotificationRequestDTO $requestDTO): bool
+    public function sendEmail(MessageRequestDTO $requestDTO): bool
     {
-        return $this->send(NotificationChannelEnum::EMAIL, $requestDTO);
+        return $this->send(MessageChannelEnum::EMAIL, $requestDTO);
     }
 
     /**
      * Send an SMS notification
      *
-     * @param NotificationRequestDTO $requestDTO The notification request
+     * @param MessageRequestDTO $requestDTO The notification request
      * @return bool Success status of the delivery attempt
      * @throws Exception
      */
-    public function sendSms(NotificationRequestDTO $requestDTO): bool
+    public function sendSms(MessageRequestDTO $requestDTO): bool
     {
-        return $this->send(NotificationChannelEnum::SMS, $requestDTO);
+        return $this->send(MessageChannelEnum::SMS, $requestDTO);
     }
 
     /**
      * Send a call notification
      *
-     * @param NotificationRequestDTO $requestDTO The notification request
+     * @param MessageRequestDTO $requestDTO The notification request
      * @return bool Success status of the delivery attempt
      * @throws Exception
      */
-    public function sendCall(NotificationRequestDTO $requestDTO): bool
+    public function sendCall(MessageRequestDTO $requestDTO): bool
     {
-        return $this->send(NotificationChannelEnum::CALL, $requestDTO);
+        return $this->send(MessageChannelEnum::CALL, $requestDTO);
     }
 
     /**
@@ -126,7 +126,7 @@ final class NotificationService
      * @param array<string, mixed> $metadata Additional metadata
      * @return bool Success status of the delivery attempt
      *
-     * @throws UnsupportedNotificationMethodException If the channel is not supported
+     * @throws UnsupportedMessageMethodException If the channel is not supported
      */
     public function sendLegacy(
         string $channel,
@@ -138,15 +138,15 @@ final class NotificationService
         array $metadata = []
     ): bool {
         // Validate channel
-        if (!NotificationChannelEnum::isSupported($channel)) {
-            throw new UnsupportedNotificationMethodException(
+        if (!MessageChannelEnum::isSupported($channel)) {
+            throw new UnsupportedMessageMethodException(
                 $channel,
-                NotificationChannelEnum::getAvailableChannels()
+                MessageChannelEnum::getAvailableChannels()
             );
         }
 
         // Create request DTO from legacy parameters
-        $requestDTO = NotificationPayloadGenerator::createRequest(
+        $requestDTO = MessagePayloadGenerator::createRequest(
             $recipient,
             $accountUuid,
             $content,
@@ -156,7 +156,7 @@ final class NotificationService
         );
 
         // Send using the modern method
-        return $this->send(NotificationChannelEnum::from($channel), $requestDTO);
+        return $this->send(MessageChannelEnum::from($channel), $requestDTO);
     }
 
     /**
@@ -170,8 +170,8 @@ final class NotificationService
      * @param array<string, mixed> $metadata Additional metadata
      * @return bool Success status of the delivery attempt
      *
-     * @throws UnsupportedNotificationMethodException If the channel is not supported
-     * @throws InvalidNotificationIdentifierException If identifier format is invalid
+     * @throws UnsupportedMessageMethodException If the channel is not supported
+     * @throws InvalidMessageIdentifierException If identifier format is invalid
      */
     public function sendLegacyWithIdentifier(
         string $channel,
@@ -182,15 +182,15 @@ final class NotificationService
         array $metadata = []
     ): bool {
         // Validate channel
-        if (!NotificationChannelEnum::isSupported($channel)) {
-            throw new UnsupportedNotificationMethodException(
+        if (!MessageChannelEnum::isSupported($channel)) {
+            throw new UnsupportedMessageMethodException(
                 $channel,
-                NotificationChannelEnum::getAvailableChannels()
+                MessageChannelEnum::getAvailableChannels()
             );
         }
 
         // Create request DTO from legacy identifier
-        $requestDTO = NotificationPayloadGenerator::createFromLegacyIdentifier(
+        $requestDTO = MessagePayloadGenerator::createFromLegacyIdentifier(
             $identifier,
             $content,
             $templateSlug,
@@ -199,7 +199,7 @@ final class NotificationService
         );
 
         // Send using the modern method
-        return $this->send(NotificationChannelEnum::from($channel), $requestDTO);
+        return $this->send(MessageChannelEnum::from($channel), $requestDTO);
     }
 
     /**
@@ -249,11 +249,11 @@ final class NotificationService
      * useful for API endpoints or configuration-driven notifications.
      *
      * @param array<string, mixed> $data The request data
-     * @return NotificationRequestDTO The created request DTO
+     * @return MessageRequestDTO The created request DTO
      */
-    public function createRequestFromArray(array $data): NotificationRequestDTO
+    public function createRequestFromArray(array $data): MessageRequestDTO
     {
-        return NotificationRequestDTO::fromArray($data);
+        return MessageRequestDTO::fromArray($data);
     }
 
     /**
@@ -264,8 +264,8 @@ final class NotificationService
      * @param string $content Content for the notification
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
-     * @param NotificationMetadataDTO|null $metadata Additional metadata
-     * @return NotificationRequestDTO The created request DTO
+     * @param MessageMetadataDTO|null $metadata Additional metadata
+     * @return MessageRequestDTO The created request DTO
      */
     public function createRequest(
         string $recipient,
@@ -273,15 +273,15 @@ final class NotificationService
         string $content = '',
         ?string $templateSlug = null,
         array $placeholders = [],
-        ?NotificationMetadataDTO $metadata = null
-    ): NotificationRequestDTO {
-        return new NotificationRequestDTO(
+        ?MessageMetadataDTO $metadata = null
+    ): MessageRequestDTO {
+        return new MessageRequestDTO(
             recipient: $recipient,
             accountUuid: $accountUuid,
             content: $content,
             templateSlug: $templateSlug,
             placeholders: $placeholders,
-            metadata: $metadata ?? new NotificationMetadataDTO(),
+            metadata: $metadata ?? new MessageMetadataDTO(),
         );
     }
 
@@ -294,7 +294,7 @@ final class NotificationService
     public function validateLegacyIdentifier(string $identifier): bool
     {
         try {
-            NotificationPayloadGenerator::parseIdentifier($identifier);
+            MessagePayloadGenerator::parseIdentifier($identifier);
             return true;
         } catch (Exception) {
             return false;
@@ -309,6 +309,6 @@ final class NotificationService
      */
     public function parseLegacyIdentifier(string $identifier): array
     {
-        return NotificationPayloadGenerator::parseIdentifier($identifier);
+        return MessagePayloadGenerator::parseIdentifier($identifier);
     }
 }

@@ -5,9 +5,9 @@ namespace DrBalcony\NovaCommon\Exceptions;
 use InvalidArgumentException;
 
 /**
- * Exception thrown when an unsupported notification method is requested
+ * Exception thrown when an unsupported message method is requested
  */
-final class UnsupportedNotificationMethodException extends InvalidArgumentException
+final class UnsupportedMessageMethodException extends InvalidArgumentException
 {
     /**
      * @param string $method The unsupported method
@@ -20,7 +20,7 @@ final class UnsupportedNotificationMethodException extends InvalidArgumentExcept
             : ' Supported methods: ' . implode(', ', $supportedMethods);
 
         parent::__construct(
-            "Unsupported notification method: '{$method}'.{$supportedMethodsList}"
+            "Unsupported message method: '{$method}'.{$supportedMethodsList}"
         );
     }
 }

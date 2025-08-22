@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace DrBalcony\NovaCommon\Services\Notification\Factories;
+namespace DrBalcony\NovaCommon\Services\Message\Factories;
 
-use DrBalcony\NovaCommon\Enums\NotificationChannelEnum;
-use DrBalcony\NovaCommon\Exceptions\UnsupportedNotificationMethodException;
-use DrBalcony\NovaCommon\Services\Notification\Contracts\NotificationDeliveryStrategyInterface;
-use DrBalcony\NovaCommon\Services\Notification\Strategies\CallNotificationStrategy;
-use DrBalcony\NovaCommon\Services\Notification\Strategies\EmailNotificationStrategy;
-use DrBalcony\NovaCommon\Services\Notification\Strategies\SmsNotificationStrategy;
+use DrBalcony\NovaCommon\Enums\MessageChannelEnum;
+use DrBalcony\NovaCommon\Exceptions\UnsupportedMessageMethodException;
+use DrBalcony\NovaCommon\Services\Message\Contracts\MessageDeliveryStrategyInterface;
+use DrBalcony\NovaCommon\Services\Message\Strategies\CallMessageStrategy;
+use DrBalcony\NovaCommon\Services\Message\Strategies\EmailMessageStrategy;
+use DrBalcony\NovaCommon\Services\Message\Strategies\SmsMessageStrategy;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Factory for creating notification delivery strategy instances
+ * Factory for creating message delivery strategy instances
  *
- * This factory manages the registration and creation of notification delivery strategies,
+ * This factory manages the registration and creation of message delivery strategies,
  * providing a centralized way to handle different communication channels.
  */
-final class NotificationDeliveryFactory
+final class MessageDeliveryFactory
 {
     /**
-     * @var array<string, class-string<NotificationDeliveryStrategyInterface>>
+     * @var array<string, class-string<MessageDeliveryStrategyInterface>>
      */
     private array $strategies = [];
 
@@ -36,10 +36,10 @@ final class NotificationDeliveryFactory
     }
 
     /**
-     * Register a new notification strategy
+     * Register a new message strategy
      *
-     * @param string $method The notification method identifier
-     * @param class-string<NotificationDeliveryStrategyInterface> $strategyClass The strategy class
+     * @param string $method The message method identifier
+     * @param class-string<MessageDeliveryStrategyInterface> $strategyClass The strategy class
      * @return self For method chaining
      *
      * @throws InvalidArgumentException If the strategy class is invalid
@@ -50,15 +50,15 @@ final class NotificationDeliveryFactory
             throw new InvalidArgumentException("Strategy class '{$strategyClass}' does not exist");
         }
 
-        if (!is_subclass_of($strategyClass, NotificationDeliveryStrategyInterface::class)) {
+        if (!is_subclass_of($strategyClass, MessageDeliveryStrategyInterface::class)) {
             throw new InvalidArgumentException(
-                "Strategy class '{$strategyClass}' must implement NotificationDeliveryStrategyInterface"
+                "Strategy class '{$strategyClass}' must implement MessageDeliveryStrategyInterface"
             );
         }
 
         $this->strategies[$method] = $strategyClass;
 
-        $this->logger->debug('Notification strategy registered', [
+        $this->logger->debug('Message strategy registered', [
             'method' => $method,
             'strategy_class' => $strategyClass,
         ]);
@@ -67,14 +67,14 @@ final class NotificationDeliveryFactory
     }
 
     /**
-     * Create a notification delivery strategy instance
+     * Create a message delivery strategy instance
      *
-     * @param string $method The notification method
-     * @return NotificationDeliveryStrategyInterface The strategy instance
+     * @param string $method The message method
+     * @return MessageDeliveryStrategyInterface The strategy instance
      *
-     * @throws UnsupportedNotificationMethodException If the method is not supported
+     * @throws UnsupportedMessageMethodException If the method is not supported
      */
-    public function create(string $method): NotificationDeliveryStrategyInterface
+    public function create(string $method): MessageDeliveryStrategyInterface
     {
         if (!isset($this->strategies[$method])) {
             $this->logger->error('Unsupported notification method requested', [
@@ -82,7 +82,7 @@ final class NotificationDeliveryFactory
                 'available_methods' => $this->getAvailableMethods(),
             ]);
 
-            throw new UnsupportedNotificationMethodException($method, $this->getAvailableMethods());
+            throw new UnsupportedMessageMethodException($method, $this->getAvailableMethods());
         }
 
         $strategyClass = $this->strategies[$method];
@@ -128,7 +128,7 @@ final class NotificationDeliveryFactory
      * Get the strategy class for a given method
      *
      * @param string $method The notification method
-     * @return class-string<NotificationDeliveryStrategyInterface>|null The strategy class or null if not found
+     * @return class-string<MessageDeliveryStrategyInterface>|null The strategy class or null if not found
      */
     public function getStrategyClass(string $method): ?string
     {
@@ -162,9 +162,9 @@ final class NotificationDeliveryFactory
     private function registerDefaultStrategies(): void
     {
         $defaultStrategies = [
-            NotificationChannelEnum::EMAIL->value => EmailNotificationStrategy::class,
-            NotificationChannelEnum::SMS->value => SmsNotificationStrategy::class,
-            NotificationChannelEnum::CALL->value => CallNotificationStrategy::class,
+            MessageChannelEnum::EMAIL->value => EmailMessageStrategy::class,
+            MessageChannelEnum::SMS->value => SmsMessageStrategy::class,
+            MessageChannelEnum::CALL->value => CallMessageStrategy::class,
         ];
 
         foreach ($defaultStrategies as $method => $strategyClass) {

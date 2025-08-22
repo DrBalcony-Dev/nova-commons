@@ -1,11 +1,11 @@
-# Notification System - DrBalcony NovaCommon
+# Message System - DrBalcony NovaCommon
 
-A professional, extensible notification system built for Laravel applications using the Strategy pattern and DTOs for type safety.
+A professional, extensible message system built for Laravel applications using the Strategy pattern and DTOs for type safety.
 
 ## Features
 
-- **Multi-channel support**: Email, SMS, and Call notifications
-- **Template-based or content-based** notifications
+- **Multi-channel support**: Email, SMS, and Call messages
+- **Template-based or content-based** messages
 - **Strategy pattern** for easy extensibility
 - **Strong typing** with DTOs and strict type declarations
 - **RabbitMQ integration** for reliable message delivery
@@ -21,7 +21,7 @@ A professional, extensible notification system built for Laravel applications us
 
 ```env
 # Required: Default account UUID
-DEFAULT_ACCOUNT_UUID=your-default-account-uuid-here
+ACCOUNT_UUID=your-account-uuid-here
 ```
 
 ## Basic Usage
@@ -30,64 +30,64 @@ DEFAULT_ACCOUNT_UUID=your-default-account-uuid-here
 
 ```php
 
-$notificationService = app(NotificationService::class);
+$messageService = app(MessageService::class);
 
-// Simple notification (uses default account UUID from config)
-$request = $notificationService->createRequest(
+// Simple message (uses default account UUID from config)
+$request = $messageService->createRequest(
     recipient: 'user@example.com',
     content: 'Your order has been confirmed!'
 );
-$success = $notificationService->sendEmail($request);
+$success = $messageService->sendEmail($request);
 
 // With specific account UUID
-$request = $notificationService->createRequest(
+$request = $messageService->createRequest(
     recipient: 'user@example.com',
     accountUuid: '12345678-1234-1234-1234-123456789012',
     content: 'Your order has been confirmed!'
 );
-$success = $notificationService->sendEmail($request);
+$success = $messageService->sendEmail($request);
 
-// Template-based notification
-$request = $notificationService->createRequest(
+// Template-based message
+$request = $messageService->createRequest(
     recipient: 'user@example.com',
     templateSlug: 'order_confirmation',
     placeholders: ['order_id' => '12345', 'customer_name' => 'John Doe']
 );
-$success = $notificationService->sendEmail($request);
+$success = $messageService->sendEmail($request);
 ```
 
 ### Channel-Specific Methods
 
 ```php
-// Email notification
-$emailRequest = $notificationService->createRequest(
+// Email message
+$emailRequest = $messageService->createRequest(
     'user@example.com',
     content: 'Welcome to our platform!'
 );
-$notificationService->sendEmail($emailRequest);
+$messageService->sendEmail($emailRequest);
 
-// SMS notification
-$smsRequest = $notificationService->createRequest(
+// SMS message
+$smsRequest = $messageService->createRequest(
     '+1234567890',
     content: 'Your verification code is: 123456'
 );
-$notificationService->sendSms($smsRequest);
+$messageService->sendSms($smsRequest);
 
 // Generic channel sending
-$notificationService->send(NotificationChannelEnum::EMAIL, $emailRequest);
+$messageService->send(MessageChannelEnum::EMAIL, $emailRequest);
 ```
 
 ### Using DTOs Directly
 
 ```php
 
-$metadata = new NotificationMetadataDTO(
+$metadata = new MessageMetadataDTO(
     data: ['priority' => 'high'],
     category: 'user-alert',
     subject: 'Important Update'
 );
 
-$request = new NotificationRequestDTO(
+$request = new MessageRequestDTO(
     recipient: 'user@example.com',
     accountUuid: null, // Will use config default
     content: 'This is an important update.',
@@ -96,7 +96,7 @@ $request = new NotificationRequestDTO(
     metadata: $metadata
 );
 
-$notificationService->send(NotificationChannelEnum::EMAIL, $request);
+$messageService->send(MessageChannelEnum::EMAIL, $request);
 ```
 
 ## Configuration Management
@@ -106,29 +106,29 @@ $notificationService->send(NotificationChannelEnum::EMAIL, $request);
 The system automatically handles account UUIDs in the following priority:
 
 1. **Explicit UUID**: If provided in the request
-2. **Config default**: From `NOTIFICATION_DEFAULT_ACCOUNT_UUID` environment variable
+2. **Config default**: From `DEFAULT_ACCOUNT_UUID` environment variable
 3. **Empty string**: If neither is available (will log a warning)
 
 ```php
 // Uses explicit UUID
-$request = $notificationService->createRequest(
+$request = $messageService->createRequest(
     'user@example.com', 
     '12345678-1234-1234-1234-123456789012'
 );
 
 // Uses config default
-$request = $notificationService->createRequest('user@example.com');
+$request = $messageService->createRequest('user@example.com');
 
 // Also uses config default
-$request = $notificationService->createRequest('user@example.com', null);
+$request = $messageService->createRequest('user@example.com', null);
 ```
 
-### Template-Based Notifications
+### Template-Based Messages
 
 When using templates, the content parameter is ignored:
 
 ```php
-$request = $notificationService->createRequest(
+$request = $messageService->createRequest(
     recipient: 'user@example.com',
     content: '', // Ignored when using templates
     templateSlug: 'welcome_email',
@@ -138,7 +138,7 @@ $request = $notificationService->createRequest(
     ]
 );
 
-$notificationService->sendEmail($request);
+$messageService->sendEmail($request);
 ```
 
 ## Advanced Usage
@@ -147,14 +147,14 @@ $notificationService->sendEmail($request);
 
 ```php
 
-$metadata = new NotificationMetadataDTO(
-    data: ['utm_source' => 'notification', 'campaign_id' => 'spring2024'],
+$metadata = new MessageMetadataDTO(
+    data: ['utm_source' => 'message', 'campaign_id' => 'spring2024'],
     category: 'marketing',
     senderName: 'Custom Sender',
     subject: 'Special Offer'
 );
 
-$request = $notificationService->createRequest(
+$request = $messageService->createRequest(
     'user@example.com',
     content: 'Check out our latest offers!',
     metadata: $metadata
@@ -163,20 +163,20 @@ $request = $notificationService->createRequest(
 
 ### Custom Strategies
 
-Register custom notification strategies:
+Register custom message strategies:
 
 ```php
 
-class SlackNotificationStrategy implements NotificationDeliveryStrategyInterface
+class SlackMessageStrategy implements MessageDeliveryStrategyInterface
 {
-    public function send(NotificationRequestDTO $requestDTO): bool
+    public function send(MessageRequestDTO $requestDTO): bool
     {
-        // Implementation for Slack notifications
+        // Implementation for Slack messages
         return true;
     }
 }
 
-$notificationService->registerStrategy('slack', SlackNotificationStrategy::class);
+$messageService->registerStrategy('slack', SlackMessageStrategy::class);
 ```
 
 ### Creating from Arrays
@@ -195,8 +195,8 @@ $requestData = [
     ]
 ];
 
-$request = $notificationService->createRequestFromArray($requestData);
-$notificationService->sendEmail($request);
+$request = $messageService->createRequestFromArray($requestData);
+$messageService->sendEmail($request);
 ```
 
 ## Legacy Compatibility
@@ -205,7 +205,7 @@ $notificationService->sendEmail($request);
 
 ```php
 // Legacy method with separate parameters
-$success = $notificationService->sendLegacy(
+$success = $messageService->sendLegacy(
     channel: 'email',
     recipient: 'user@example.com',
     accountUuid: '12345678-1234-1234-1234-123456789012', // Optional
@@ -216,7 +216,7 @@ $success = $notificationService->sendLegacy(
 );
 
 // Legacy method with concatenated identifier (old format)
-$success = $notificationService->sendLegacyWithIdentifier(
+$success = $messageService->sendLegacyWithIdentifier(
     channel: 'email',
     identifier: 'user@example.com_12345678-1234-1234-1234-123456789012',
     content: 'Hello World!'
@@ -229,22 +229,22 @@ The system throws specific exceptions for different error scenarios:
 
 ```php
 use DrBalcony\NovaCommon\Exceptions\{
-    InvalidNotificationIdentifierException,
-    UnsupportedNotificationMethodException,
-    NotificationValidationException
+    InvalidMessageIdentifierException,
+    UnsupportedMessageMethodException,
+    MessageValidationException
 };
 
 try {
-    $notificationService->send(NotificationChannelEnum::EMAIL, $request);
-} catch (NotificationValidationException $e) {
+    $messageService->send(MessageChannelEnum::EMAIL, $request);
+} catch (MessageValidationException $e) {
     // Handle validation errors (invalid email/phone)
-    logger()->error('Notification validation failed', ['error' => $e->getMessage()]);
-} catch (UnsupportedNotificationMethodException $e) {
-    // Handle unsupported notification channels
+    logger()->error('Message validation failed', ['error' => $e->getMessage()]);
+} catch (UnsupportedMessageMethodException $e) {
+    // Handle unsupported message channels
     logger()->error('Unsupported channel', ['error' => $e->getMessage()]);
 } catch (Exception $e) {
     // Handle other errors (RabbitMQ failures, etc.)
-    logger()->error('Notification system error', ['error' => $e->getMessage()]);
+    logger()->error('Message system error', ['error' => $e->getMessage()]);
 }
 ```
 
@@ -261,10 +261,10 @@ try {
 
 ```php
 // Validate legacy identifier format
-$isValid = $notificationService->validateLegacyIdentifier('user@example.com_account123'); // true/false
+$isValid = $messageService->validateLegacyIdentifier('user@example.com_account123'); // true/false
 
 // Parse legacy identifier
-$components = $notificationService->parseLegacyIdentifier('user@example.com_account123');
+$components = $messageService->parseLegacyIdentifier('user@example.com_account123');
 // Returns: ['recipient' => 'user@example.com', 'accountUuid' => 'account123']
 ```
 
@@ -274,14 +274,14 @@ The system uses PSR-3 compatible logging throughout:
 
 - **INFO level**: Successful operations, processing starts
 - **ERROR level**: Validation failures, system errors with full context
-- **WARNING level**: Non-critical issues (e.g., call notifications not implemented)
+- **WARNING level**: Non-critical issues (e.g., call messages not implemented)
 - **DEBUG level**: Strategy registration, detailed processing steps
 
 ```php
 // All operations are automatically logged with context
 // Example log entries:
-// [INFO] Processing notification request {"channel":"email","recipient":"user@example.com","account_uuid":"123..."}
-// [INFO] Email notification sent successfully {"recipient":"user@example.com","account_id":"123...","queue":"pulse_email_events"}
+// [INFO] Processing message request {"channel":"email","recipient":"user@example.com","account_uuid":"123..."}
+// [INFO] Email message sent successfully {"recipient":"user@example.com","account_id":"123...","queue":"pulse_email_events"}
 // [ERROR] Email validation failed {"recipient":"invalid-email","account_uuid":"123...","error":"Invalid email address: invalid-email"}
 ```
 
@@ -297,14 +297,14 @@ The system maintains backward compatibility with existing RabbitMQ consumers:
   "to": "user@example.com",
   "metadata": {
     "sender_name": "DrBalcony-earth",
-    "subject": "DrBalcony Notification"
+    "subject": "DrBalcony Message"
   },
-  "content": "Your notification content",
+  "content": "Your message content",
   "category": "system-alert"
 }
 ```
 
-For template-based notifications:
+For template-based messages:
 
 ```json
 {
@@ -321,11 +321,6 @@ For template-based notifications:
 }
 ```
 
-### Queue Names
-
-- **Email**: `pulse_email_events` (configurable via `NOTIFICATION_EMAIL_QUEUE`)
-- **SMS**: `pulse_sms_events` (configurable via `NOTIFICATION_SMS_QUEUE`)
-- **Call**: `pulse_call_events` (configurable via `NOTIFICATION_CALL_QUEUE`)
 
 ### Message Properties
 
@@ -338,7 +333,7 @@ All messages are sent with:
 
 ```php
 // Old way - concatenated identifier
-$payload = NotificationPayloadGenerator::generate(
+$payload = MessagePayloadGenerator::generate(
     'user@example.com_12345',
     $content,
     $template_slug,
@@ -354,25 +349,25 @@ $strategy->send('user@example.com_12345', $content, $template_slug, $placeholder
 
 ```php
 // New way - clean parameters
-$request = $notificationService->createRequest(
+$request = $messageService->createRequest(
     recipient: 'user@example.com',
     accountUuid: '12345', // Optional - uses config default if null
     content: $content,
     templateSlug: $template_slug,
     placeholders: $placeholders,
-    metadata: NotificationMetadataDTO::fromArray($metadata)
+    metadata: MessageMetadataDTO::fromArray($metadata)
 );
 
-$notificationService->sendEmail($request);
+$messageService->sendEmail($request);
 ```
 
 ## Best Practices
 
-1. **Always set `NOTIFICATION_DEFAULT_ACCOUNT_UUID`** in your environment
+1. **Always set `DEFAULT_ACCOUNT_UUID`** in your environment
 2. **Use DTOs** instead of arrays for type safety
 3. **Handle exceptions** appropriately in your application layer
-4. **Use template-based notifications** for consistent messaging
-5. **Log notification attempts** for debugging and monitoring
+4. **Use template-based messages** for consistent messaging
+5. **Log message attempts** for debugging and monitoring
 6. **Use dependency injection** rather than direct instantiation
 7. **Set account UUID explicitly** for multi-tenant applications
 8. **Use config values** for environment-specific settings
@@ -391,19 +386,19 @@ The system is designed to be easily testable:
 
 ```php
 // Mock the service in tests
-$mockService = Mockery::mock(NotificationService::class);
+$mockService = Mockery::mock(MessageService::class);
 $mockService->shouldReceive('sendEmail')->andReturn(true);
 
 // Or test with real service using test logger
 $testLogger = new TestLogger();
-$service = new NotificationService(null, $testLogger);
+$service = new MessageService(null, $testLogger);
 
 // Test with different account UUIDs
 $request = $service->createRequest('test@example.com', 'test-uuid-123');
 $this->assertEquals('test-uuid-123', $request->getAccountUuid());
 
 // Test config fallback
-config(['notification.default_account_uuid' => 'default-uuid-456']);
+config(['nova-common.default_account_uuid' => 'default-uuid-456']);
 $request = $service->createRequest('test@example.com');
 $this->assertEquals('default-uuid-456', $request->getAccountUuid());
 ```
@@ -412,7 +407,7 @@ $this->assertEquals('default-uuid-456', $request->getAccountUuid());
 
 The system follows these design patterns:
 
-- **Strategy Pattern**: For different notification channels
+- **Strategy Pattern**: For different message channels
 - **Factory Pattern**: For creating strategy instances
 - **DTO Pattern**: For type-safe data transfer
 - **Dependency Injection**: For loose coupling

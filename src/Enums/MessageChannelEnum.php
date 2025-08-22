@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace DrBalcony\NovaCommon\Enums;
 
 /**
- * Enumeration of supported notification delivery channels
+ * Enumeration of supported message delivery channels
  */
-enum NotificationChannelEnum: string
+enum MessageChannelEnum: string
 {
     case EMAIL = 'email';
     case SMS = 'sms';
     case CALL = 'call';
 
     /**
-     * Get all available notification channels
+     * Get all available message channels
      *
      * @return array<string>
      */
