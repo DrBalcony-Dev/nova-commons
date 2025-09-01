@@ -17,7 +17,7 @@ use DrBalcony\NovaCommon\Exceptions\InvalidMessageIdentifierException;
  */
 final class MessagePayloadGenerator
 {
-    private const string DEFAULT_CATEGORY = 'system-alert';
+    private const DEFAULT_CATEGORY = 'system-alert';
 
     /**
      * Generate message payload from request DTO
