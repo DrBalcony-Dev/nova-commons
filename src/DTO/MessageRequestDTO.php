@@ -17,6 +17,7 @@ final readonly class MessageRequestDTO
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param MessageMetadataDTO $metadata Additional metadata
+     * @param array<string> $attachments Array of attachment URL strings
      */
     public function __construct(
         public string             $recipient,
@@ -25,6 +26,7 @@ final readonly class MessageRequestDTO
         public ?string            $templateSlug = null,
         public array              $placeholders = [],
         public MessageMetadataDTO $metadata = new MessageMetadataDTO(),
+        public array              $attachments = [],
     ) {}
 
     /**
@@ -35,6 +37,12 @@ final readonly class MessageRequestDTO
      */
     public static function fromArray(array $data): self
     {
+        $attachments = $data['attachments'] ?? [];
+        if (! is_array($attachments)) {
+            $attachments = [];
+        }
+        $attachments = array_values(array_filter(array_map('strval', $attachments)));
+
         return new self(
             recipient: (string) $data['recipient'],
             accountUuid: $data['account_uuid'] ?? null,
@@ -44,6 +52,7 @@ final readonly class MessageRequestDTO
             metadata: isset($data['metadata'])
                 ? MessageMetadataDTO::fromArray($data['metadata'])
                 : new MessageMetadataDTO(),
+            attachments: $attachments,
         );
     }
 
@@ -61,7 +70,18 @@ final readonly class MessageRequestDTO
             'template_slug' => $this->templateSlug,
             'placeholders' => $this->placeholders,
             'metadata' => $this->metadata->toArray(),
+            'attachments' => $this->attachments,
         ];
+    }
+
+    /**
+     * Check if this request has any attachments
+     *
+     * @return bool
+     */
+    public function hasAttachments(): bool
+    {
+        return ! empty($this->attachments);
     }
 
     /**

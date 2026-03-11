@@ -16,6 +16,7 @@ final readonly class MessagePayloadDTO
      * @param string|null $content Direct content (used when template is null)
      * @param string|null $template Template slug
      * @param array<string, mixed> $placeholders Template placeholders
+     * @param array<string> $attachments Array of attachment URL strings
      */
     public function __construct(
         public string             $accountId,
@@ -24,6 +25,7 @@ final readonly class MessagePayloadDTO
         public ?string            $content = null,
         public ?string            $template = null,
         public array              $placeholders = [],
+        public array              $attachments = [],
     ) {}
 
     /**
@@ -34,6 +36,12 @@ final readonly class MessagePayloadDTO
      */
     public static function fromArray(array $data): self
     {
+        $attachments = $data['attachments'] ?? [];
+        if (! is_array($attachments)) {
+            $attachments = [];
+        }
+        $attachments = array_values(array_filter(array_map('strval', $attachments)));
+
         return new self(
             accountId: (string) $data['account_id'],
             recipient: (string) $data['to'],
@@ -43,6 +51,7 @@ final readonly class MessagePayloadDTO
             content: $data['content'] ?? null,
             template: $data['template'] ?? null,
             placeholders: $data['placeholders'] ?? [],
+            attachments: $attachments,
         );
     }
 
@@ -58,6 +67,10 @@ final readonly class MessagePayloadDTO
             'to' => $this->recipient,
             'metadata' => $this->metadata->toArray(),
         ];
+
+        if (! empty($this->attachments)) {
+            $payload['attachments'] = $this->attachments;
+        }
 
         if ($this->template !== null) {
             $payload['template'] = $this->template;
