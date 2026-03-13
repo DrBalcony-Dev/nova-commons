@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace DrBalcony\NovaCommon\DTO;
 
+use DrBalcony\NovaCommon\Utils\MessageAttachmentSanitizer;
+
 
 /**
  * Data Transfer Object for message request
  */
 final readonly class MessageRequestDTO
 {
+    public array $attachments;
+
     /**
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, will be retrieved from config)
@@ -17,7 +21,7 @@ final readonly class MessageRequestDTO
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param MessageMetadataDTO $metadata Additional metadata
-     * @param array<string> $attachments Array of attachment URL strings
+     * @param mixed $attachments Raw attachments (array, null, or other); will be sanitized
      */
     public function __construct(
         public string             $recipient,
@@ -26,8 +30,10 @@ final readonly class MessageRequestDTO
         public ?string            $templateSlug = null,
         public array              $placeholders = [],
         public MessageMetadataDTO $metadata = new MessageMetadataDTO(),
-        public array              $attachments = [],
-    ) {}
+        mixed                     $attachments = [],
+    ) {
+        $this->attachments = MessageAttachmentSanitizer::sanitize($attachments);
+    }
 
     /**
      * Create from array
@@ -37,12 +43,6 @@ final readonly class MessageRequestDTO
      */
     public static function fromArray(array $data): self
     {
-        $attachments = $data['attachments'] ?? [];
-        if (! is_array($attachments)) {
-            $attachments = [];
-        }
-        $attachments = array_values(array_filter(array_map('strval', $attachments)));
-
         return new self(
             recipient: (string) $data['recipient'],
             accountUuid: $data['account_uuid'] ?? null,
@@ -52,7 +52,7 @@ final readonly class MessageRequestDTO
             metadata: isset($data['metadata'])
                 ? MessageMetadataDTO::fromArray($data['metadata'])
                 : new MessageMetadataDTO(),
-            attachments: $attachments,
+            attachments: $data['attachments'] ?? [],
         );
     }
 

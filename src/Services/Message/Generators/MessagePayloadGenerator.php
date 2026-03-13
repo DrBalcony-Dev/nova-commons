@@ -77,8 +77,6 @@ final class MessagePayloadGenerator
         array $metadata = [],
         array $attachments = []
     ): MessageRequestDTO {
-        $attachments = array_values(array_filter(array_map('strval', $attachments)));
-
         return new MessageRequestDTO(
             recipient: $recipient,
             accountUuid: $accountUuid,
