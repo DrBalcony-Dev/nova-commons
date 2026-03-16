@@ -259,12 +259,15 @@ final class MessageService
     /**
      * Create a notification request DTO with metadata
      *
+     * Content-based: Set templateSlug to null and provide content for custom message bodies.
+     * Template-based: Set templateSlug and placeholders; content is ignored.
+     *
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, uses config default)
-     * @param string $content Content for the notification
-     * @param string|null $templateSlug Template identifier
+     * @param string $content Full message body. Used when templateSlug is null.
+     * @param string|null $templateSlug Template identifier. Null = use content instead.
      * @param array<string, mixed> $placeholders Template placeholders
-     * @param MessageMetadataDTO|null $metadata Additional metadata
+     * @param MessageMetadataDTO|null $metadata Additional metadata (subject for email, etc.)
      * @return MessageRequestDTO The created request DTO
      */
     public function createRequest(

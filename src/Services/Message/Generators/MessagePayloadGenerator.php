@@ -12,8 +12,8 @@ use DrBalcony\NovaCommon\Exceptions\InvalidMessageIdentifierException;
 /**
  * Generator for message payloads
  *
- * This class handles the creation of message payloads from request DTOs
- * with clean separation of recipient and account UUID parameters.
+ * Supports both content-based (templateSlug null, use content) and template-based
+ * (templateSlug set, use template + placeholders) messages.
  */
 final class MessagePayloadGenerator
 {
