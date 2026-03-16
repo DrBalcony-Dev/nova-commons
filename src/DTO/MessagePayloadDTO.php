@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace DrBalcony\NovaCommon\DTO;
 
+use DrBalcony\NovaCommon\Utils\MessageAttachmentSanitizer;
+
 /**
  * Data Transfer Object for message payload
  */
 final readonly class MessagePayloadDTO
 {
+    public array $attachments;
+
     /**
      * @param string $accountId Account identifier (UUID)
      * @param string $recipient Recipient identifier (email/phone)
@@ -16,6 +20,7 @@ final readonly class MessagePayloadDTO
      * @param string|null $content Direct content (used when template is null)
      * @param string|null $template Template slug
      * @param array<string, mixed> $placeholders Template placeholders
+     * @param mixed $attachments Raw attachments (array, null, or other); will be sanitized
      */
     public function __construct(
         public string             $accountId,
@@ -24,7 +29,10 @@ final readonly class MessagePayloadDTO
         public ?string            $content = null,
         public ?string            $template = null,
         public array              $placeholders = [],
-    ) {}
+        mixed                     $attachments = [],
+    ) {
+        $this->attachments = MessageAttachmentSanitizer::sanitize($attachments);
+    }
 
     /**
      * Create from array
@@ -43,6 +51,7 @@ final readonly class MessagePayloadDTO
             content: $data['content'] ?? null,
             template: $data['template'] ?? null,
             placeholders: $data['placeholders'] ?? [],
+            attachments: $data['attachments'] ?? [],
         );
     }
 
@@ -57,6 +66,7 @@ final readonly class MessagePayloadDTO
             'account_id' => $this->accountId,
             'to' => $this->recipient,
             'metadata' => $this->metadata->toArray(),
+            'attachments' => $this->attachments,
         ];
 
         if ($this->template !== null) {
@@ -70,6 +80,16 @@ final readonly class MessagePayloadDTO
         }
 
         return $payload;
+    }
+
+    /**
+     * Check if this payload has any attachments
+     *
+     * @return bool
+     */
+    public function hasAttachments(): bool
+    {
+        return ! empty($this->attachments);
     }
 
     /**

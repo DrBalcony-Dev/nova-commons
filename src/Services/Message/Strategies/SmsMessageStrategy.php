@@ -76,6 +76,7 @@ final class SmsMessageStrategy implements MessageDeliveryStrategyInterface
                 content: $payload->content,
                 template: $payload->template,
                 placeholders: $payload->placeholders,
+                attachments: $payload->attachments,
             );
 
             // Send to RabbitMQ
