@@ -265,6 +265,7 @@ final class MessageService
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param MessageMetadataDTO|null $metadata Additional metadata
+     * @param array<string> $attachments Array of attachment URL strings (e.g. for flyer/contract PDF)
      * @return MessageRequestDTO The created request DTO
      */
     public function createRequest(
@@ -273,7 +274,8 @@ final class MessageService
         string $content = '',
         ?string $templateSlug = null,
         array $placeholders = [],
-        ?MessageMetadataDTO $metadata = null
+        ?MessageMetadataDTO $metadata = null,
+        array $attachments = []
     ): MessageRequestDTO {
         return new MessageRequestDTO(
             recipient: $recipient,
@@ -282,6 +284,7 @@ final class MessageService
             templateSlug: $templateSlug,
             placeholders: $placeholders,
             metadata: $metadata ?? new MessageMetadataDTO(),
+            attachments: $attachments,
         );
     }
 
