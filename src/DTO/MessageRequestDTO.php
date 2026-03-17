@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace DrBalcony\NovaCommon\DTO;
 
+use DrBalcony\NovaCommon\Utils\MessageAttachmentSanitizer;
+
 
 /**
  * Data Transfer Object for message request
  */
 final readonly class MessageRequestDTO
 {
+    public array $attachments;
+
     /**
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, will be retrieved from config)
@@ -18,6 +22,7 @@ final readonly class MessageRequestDTO
      * @param string|null $templateSlug Template identifier. Leave null/empty to use content instead.
      * @param array<string, mixed> $placeholders Template placeholders (only used when templateSlug is set)
      * @param MessageMetadataDTO $metadata Additional metadata (subject, etc.)
+     * @param mixed $attachments Raw attachments (array, null, or other); will be sanitized
      */
     public function __construct(
         public string             $recipient,
@@ -26,7 +31,10 @@ final readonly class MessageRequestDTO
         public ?string            $templateSlug = null,
         public array              $placeholders = [],
         public MessageMetadataDTO $metadata = new MessageMetadataDTO(),
-    ) {}
+        mixed                     $attachments = [],
+    ) {
+        $this->attachments = MessageAttachmentSanitizer::sanitize($attachments);
+    }
 
     /**
      * Create from array
@@ -45,6 +53,7 @@ final readonly class MessageRequestDTO
             metadata: isset($data['metadata'])
                 ? MessageMetadataDTO::fromArray($data['metadata'])
                 : new MessageMetadataDTO(),
+            attachments: $data['attachments'] ?? [],
         );
     }
 
@@ -62,7 +71,18 @@ final readonly class MessageRequestDTO
             'template_slug' => $this->templateSlug,
             'placeholders' => $this->placeholders,
             'metadata' => $this->metadata->toArray(),
+            'attachments' => $this->attachments,
         ];
+    }
+
+    /**
+     * Check if this request has any attachments
+     *
+     * @return bool
+     */
+    public function hasAttachments(): bool
+    {
+        return ! empty($this->attachments);
     }
 
     /**

@@ -52,6 +52,7 @@ final class MessagePayloadGenerator
             content: $requestDTO->content,
             template: $requestDTO->templateSlug,
             placeholders: $requestDTO->placeholders,
+            attachments: $requestDTO->attachments,
         );
     }
 
@@ -64,6 +65,7 @@ final class MessagePayloadGenerator
      * @param string|null $templateSlug Template identifier
      * @param array<string, mixed> $placeholders Template placeholders
      * @param array<string, mixed> $metadata Additional metadata
+     * @param array<string> $attachments Array of attachment URL strings
      * @return MessageRequestDTO
      */
     public static function createRequest(
@@ -72,7 +74,8 @@ final class MessagePayloadGenerator
         string $content = '',
         ?string $templateSlug = null,
         array $placeholders = [],
-        array $metadata = []
+        array $metadata = [],
+        array $attachments = []
     ): MessageRequestDTO {
         return new MessageRequestDTO(
             recipient: $recipient,
@@ -81,6 +84,7 @@ final class MessagePayloadGenerator
             templateSlug: $templateSlug,
             placeholders: $placeholders,
             metadata: MessageMetadataDTO::fromArray($metadata),
+            attachments: $attachments,
         );
     }
 
@@ -112,6 +116,7 @@ final class MessagePayloadGenerator
             templateSlug: $templateSlug,
             placeholders: $placeholders,
             metadata: MessageMetadataDTO::fromArray($metadata),
+            attachments: [],
         );
     }
 

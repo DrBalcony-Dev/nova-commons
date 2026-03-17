@@ -159,7 +159,7 @@ class NovaGuard implements Guard
         $token = $this->request->bearerToken();
 
         if (!$token) {
-            Log::warning('Authentication token missing', [
+            Log::debug('Authentication token missing From NovaGuard', [
                 'ip' => $this->request->ip(),
                 'uri' => $this->request->uri()
             ]);

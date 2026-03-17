@@ -34,7 +34,7 @@ class CheckPermissionMiddleware
         $token = $request->bearerToken();
 
         if (!$token) {
-            Log::warning('Authentication token missing', [
+            Log::debug('Authentication token missing From CheckPermissionMiddleware', [
                 'ip' => $request->ip(),
                 'uri' => $request->uri()
             ]);
