@@ -14,12 +14,14 @@ final readonly class MessageMetadataDTO
      * @param string|null $category message category
      * @param string|null $senderName Sender name override
      * @param string|null $subject Subject for email messages
+     * @param string|null $sendAt ISO 8601 datetime (Y-m-d\TH:i:sP) when the message should be sent (e.g. 2025-03-19T10:00:00-07:00)
      */
     public function __construct(
         public array $data = [],
         public ?string $category = null,
         public ?string $senderName = null,
         public ?string $subject = null,
+        public ?string $sendAt = null,
     ) {}
 
     /**
@@ -35,6 +37,7 @@ final readonly class MessageMetadataDTO
             category: $data['category'] ?? null,
             senderName: $data['sender_name'] ?? null,
             subject: $data['subject'] ?? null,
+            sendAt: $data['send_at'] ?? null,
         );
     }
 
@@ -59,6 +62,10 @@ final readonly class MessageMetadataDTO
             $result['subject'] = $this->subject;
         }
 
+        if ($this->sendAt !== null) {
+            $result['send_at'] = $this->sendAt;
+        }
+
         return $result;
     }
 
@@ -75,6 +82,7 @@ final readonly class MessageMetadataDTO
             category: $other->category ?? $this->category,
             senderName: $other->senderName ?? $this->senderName,
             subject: $other->subject ?? $this->subject,
+            sendAt: $other->sendAt ?? $this->sendAt,
         );
     }
 }
