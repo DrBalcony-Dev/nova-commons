@@ -17,10 +17,11 @@ final readonly class MessageRequestDTO
     /**
      * @param string $recipient Recipient identifier (email/phone)
      * @param string|null $accountUuid Account UUID (if null, will be retrieved from config)
-     * @param string $content Content for the message (used when templateSlug is null)
-     * @param string|null $templateSlug Template identifier
-     * @param array<string, mixed> $placeholders Template placeholders
-     * @param MessageMetadataDTO $metadata Additional metadata
+     * @param string $content Full message body. Used when templateSlug is null (content-based messages).
+     *                        When templateSlug is set, content is ignored and the template is used instead.
+     * @param string|null $templateSlug Template identifier. Leave null/empty to use content instead.
+     * @param array<string, mixed> $placeholders Template placeholders (only used when templateSlug is set)
+     * @param MessageMetadataDTO $metadata Additional metadata (subject, etc.)
      * @param mixed $attachments Raw attachments (array, null, or other); will be sanitized
      */
     public function __construct(

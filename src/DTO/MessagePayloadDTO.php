@@ -17,9 +17,10 @@ final readonly class MessagePayloadDTO
      * @param string $accountId Account identifier (UUID)
      * @param string $recipient Recipient identifier (email/phone)
      * @param MessageMetadataDTO $metadata message metadata
-     * @param string|null $content Direct content (used when template is null)
-     * @param string|null $template Template slug
-     * @param array<string, mixed> $placeholders Template placeholders
+     * @param string|null $content Direct content. Used when template is null (content-based).
+     *                             When template is set, content is ignored.
+     * @param string|null $template Template slug. Null = use content instead of template.
+     * @param array<string, mixed> $placeholders Template placeholders (only when template is set)
      * @param mixed $attachments Raw attachments (array, null, or other); will be sanitized
      */
     public function __construct(
@@ -56,7 +57,9 @@ final readonly class MessagePayloadDTO
     }
 
     /**
-     * Convert to array for RabbitMQ payload
+     * Convert to array for RabbitMQ payload.
+     * When template is null, outputs content and category (content-based).
+     * When template is set, outputs template and placeholders (template-based).
      *
      * @return array<string, mixed>
      */
