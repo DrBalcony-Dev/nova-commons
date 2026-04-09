@@ -42,7 +42,8 @@ class User extends Authenticatable
         'roles',
         'created_at',
         'updated_at',
-        'profile'
+        'profile',
+        'referral_code',
     ];
 
 }
