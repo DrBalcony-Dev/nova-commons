@@ -1,6 +1,6 @@
 {
   "name": "drbalcony/nova-commons",
-  "version": "2.18.0",
+  "version": "3.0.0",
   "description": "A Laravel package providing common functionalities such as client authentication, exception handling, logging, and JSON response macros.",
   "type": "library",
   "license": "MIT",
