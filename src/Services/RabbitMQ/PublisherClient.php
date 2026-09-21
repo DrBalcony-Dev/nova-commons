@@ -39,6 +39,31 @@ class PublisherClient
     private $lastError = null;
 
     /**
+     * Queues that carry customer notifications. Every email, SMS, phone call and push
+     * from dr-nova, nova-earth and nova-pulse reaches RabbitMQ through one of these.
+     * The names match nova-pulse config/rabbitmq.php, which is where they are consumed.
+     */
+    private const NOTIFICATION_QUEUES = [
+        'pulse_email_events',
+        'pulse_sms_events',
+        'pulse_phone_call_events',
+        'pulse_push_events',
+    ];
+
+    /**
+     * Whether the queue is a notification queue that is currently switched off.
+     *
+     * Returning true from publish() rather than false is deliberate: the caller treats
+     * the message as delivered, so a queued listener completes instead of retrying and
+     * a Pulse message row is marked as sent instead of staying scheduled. Nothing
+     * accumulates, so switching notifications back on does not release a backlog.
+     */
+    private function isSuppressedQueue(string $queueName): bool
+    {
+        return in_array($queueName, self::NOTIFICATION_QUEUES, true);
+    }
+
+    /**
      * Publishes a message to a RabbitMQ queue.
      *
      * @param string $queueName The name of the queue to publish to
@@ -48,6 +73,14 @@ class PublisherClient
      */
     public function publish(string $queueName, array $message, array $properties = []): bool
     {
+        if ($this->isSuppressedQueue($queueName)) {
+            Log::info('RabbitMQ publish suppressed: notifications are switched off.', [
+                'queue' => $queueName,
+            ]);
+
+            return true;
+        }
+
         try {
             // Reset last error
             $this->lastError = null;
