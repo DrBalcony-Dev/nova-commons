@@ -26,8 +26,8 @@ final class EmailMessageStrategy implements MessageDeliveryStrategyInterface
     use RabbitMQPublisher;
 
     private const  EMAIL_QUEUE_NAME = 'pulse_email_events';
-    private const  SENDER_NAME = 'DrBalcony';
-    private const  DEFAULT_EMAIL_SUBJECT = 'DrBalcony message';
+    private const  SENDER_NAME = 'BestHouse';
+    private const  DEFAULT_EMAIL_SUBJECT = 'BestHouse message';
 
     private LoggerInterface $logger;
 

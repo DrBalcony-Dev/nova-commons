@@ -27,7 +27,7 @@ final class SmsMessageStrategy implements MessageDeliveryStrategyInterface
     use RabbitMQPublisher;
 
     private const  SMS_QUEUE_NAME = 'pulse_sms_events';
-    private const  SENDER_NAME = 'DrBalcony';
+    private const  SENDER_NAME = 'BestHouse';
 
     private LoggerInterface $logger;
     private PhoneNumberService $phoneNumberService;
